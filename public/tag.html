@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Tag | Expenze</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./bootstrap.min.css">
+  <link rel="stylesheet" href="./bulma2.css">
+  <script src="./jquery.min.js"></script>
+  <script src="./axios.min.js"></script>
+  <script src="./bootstrap.min.js"></script>
+  <script src="vue-2.6.12.js"></script>
+  <style>
+  body {
+    background-color: #eeeeee;
+    font-size: 17px;
+  }
+  p {
+    margin: 0 !important;
+  }
+  :root {
+    --padding-x-table: 20px;
+  }
+  .table>thead>tr>th, .table>tbody>tr>td, td>.btn {
+    padding: 0.1rem 0.7rem;
+  }
+  .pull-left {
+    float: left;
+  }
+  .pull-right {
+    float: right;
+  }
+  .font-14 {
+    font-size: 14px;
+  }
+  .t-blue{
+    color: #0c3940; /* #0a2f35; */
+  }
+  .cbg-primary {
+    background-color: #e9ffea;
+  }
+  .cbg-danger {
+    background-color: #fffaeb;
+  }
+  .cbg-secondary {
+    background-color: #e7e4ff;
+  }
+  .t-green{
+    color: #196642;
+  }
+  .t-red{
+    color: #791f06;
+  }
+  .t-orange {
+    color: #4a2d03; /*tag*/
+  }
+  .navbar {
+    margin-bottom: 1rem !important;
+  }
+  .custom-group-item {
+    position: relative;
+    display: block;
+    border: 1px solid rgba(0,0,0,.125);
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+  .custom-group-item:last-child {
+    border-bottom: 0;
+  }
+  .custom-group-item:first-child {
+    border-top: 0;
+  }
+  .c-block {
+    display: block;
+  }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg  navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Expenze</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="index.html">Transaction</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="history.html">History</a>
+        </li>
+        <li class="nav-item dropdown"
+          onclick="document.getElementById('dd-statement').classList.toggle('c-block')">
+          <a class="nav-link dropdown-toggle"> Statement </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-statement">
+            <a class="dropdown-item" href="statement_card_view.html">Card View</a>
+            <a class="dropdown-item" href="credit_card.html">Credit Card</a>
+            <a class="dropdown-item" href="statement_line_chart.html">Line Chart</a>
+            <a class="dropdown-item" href="bills_line_chart.html">Bills Line Chart</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown"
+          onclick="document.getElementById('dd-status').classList.toggle('c-block')">
+          <a class="nav-link dropdown-toggle"> Status </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-status">
+            <a class="dropdown-item" href="balance.html">Balance</a>
+            <a class="dropdown-item" href="expenses.html">Expenses</a>
+          </div>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right pr-5">
+        <li class="nav-item">
+          <a class="nav-link" href="account.html">Accounts</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="tag.html">Tag</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+
+  <div class="container" id="transaction-app">
+    <div class="row justify-content-md-center">
+      <div class="col-12">
+        <form>
+          <div class="form-row">
+            <div class="form-group col-3">
+              <label for="name">Tag Name</label>
+              <input type="text" class="form-control" id="name" placeholder="Tag Name" v-model="model.name">
+            </div>
+            <div class="form-group col-3">
+              <label for="amount">Transaction Types</label>
+              <select id="disabledSelect" class="form-control" v-model="model.transaction_type_id">
+                <option value="" disabled selected>Type</option>
+                <option  v-for="(item, key) in transactionTypes" :value="key" v-bind:key="key">{{item}}</option>
+              </select>
+            </div>
+            <div class="form-group col-3">
+              <label for="amount">Parent Tag</label>
+              <select id="disabledSelect" class="form-control" v-model="model.tag_id">
+                <option value="" disabled selected>Type</option>
+                <option  v-for="(item, key) in parentTags" :value="key" v-bind:key="key">{{item}}</option>
+              </select>
+            </div>
+            <div class="form-group col-3">
+              <label for="amount"><a @click="clear(false)" class="text-primary" style="cursor: pointer;">CLEAR</a></label>
+              <div class="">
+                <button class="btn btn-primary" @click="save(false)">Save</button>
+                <button class="btn btn-primary" @click="save(true)">Save & Keep Form Data</button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div v-bind:class="[showCardView ? 'col-12' : 'col-8']">
+        <div class="pull-left ml-4">
+          <input class="form-check-input" type="checkbox" value="" id="customSwitches" v-model="showCardView" @change="clear()">
+          <label class="form-check-label" for="customSwitches">
+            Show Card View
+          </label>
+        </div>
+      </div>
+      <div class="col-4" v-if="showCardView == false">
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <span class="input-group-text">Search Tag</span>
+          </div>
+          <select class="custom-select" v-model="parentModelKey"
+            @click="getSearchTags(parentModelKey)">
+            <option value="0">Select Tag...</option>
+            <option  v-for="(item, key) in parentTags" :value="key" v-bind:key="key">{{item}}</option>
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button"
+            @click="parentModelKey=0; getSearchTags(parentModelKey)">Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row mt-2" v-if="tags.length && showCardView == true">
+      <div class="col-4 mb-1 p-1" v-for="branch in tree">
+        <div class="card p-0"
+          v-bind:class="{ 'cbg-danger': branch.type == 'Expense', 'cbg-secondary': branch.type == 'Transfer', 'cbg-primary': branch.type == 'Income' }">
+          <div class="card-header p-1">
+            {{branch.name}}
+            <span class="badge badge-pill m-1 pull-right"
+            v-bind:class="{ 'badge-danger': branch.type == 'Expense', 'badge-secondary': branch.type == 'Transfer', 'badge-primary': branch.type == 'Income' }"
+              >{{branch.type}}</span>
+              <span class="badge badge-pill m-1 badge-success pull-right">{{branch.tag_count}}</span>
+          </div>
+          <div class="card-body p-1" v-if="branch.childs.length > 0">
+            <ul class="list-group list-group-flush">
+              <li class="custom-group-item p-1" v-for="leaf in branch.childs">
+                {{leaf.name}}
+                <span class="badge badge-pill m-1" v-if="branch.type != leaf.type"
+                v-bind:class="{ 'badge-danger': leaf.type == 'Expense', 'badge-secondary': leaf.type == 'Transfer', 'badge-primary': leaf.type == 'Income' }"
+                  >{{leaf.type}}</span>
+                <a class="card-link pull-right mx-1" href="#transaction-app" @click="deleteRecord(leaf)">Delete</a>
+                <a class="card-link pull-right mx-1" href="#transaction-app" @click="editRecord(leaf)">Edit</a>
+                <span class="badge badge-pill m-1 badge-success pull-right">{{leaf.tag_count}}</span>
+              </li>
+            </ul>
+          </div>
+          <div class="card-footer p-1 text-center">
+            <a class="card-link" href="#transaction-app" @click="editRecord(branch)">Edit</a>
+            <a class="card-link" href="#transaction-app" @click="deleteRecord(branch)">Delete</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row mt-2" v-if="showCardView == false">
+      <br />
+      <div class="col-lg-12 col-md-12 col-sm-12">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Name</th>
+              <th>Transaction Type</th>
+              <th>Parent Tag</th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="tag in tags">
+              <td><span class="pull-right">{{tag.id}}</span></td>
+              <td><a class="t-orange" @click="parentModelKey=tag.id; getSearchTags(parentModelKey)" style="cursor: pointer;"
+                >{{tag.name}}</a></td>
+              <td><span class="t-orange">{{transactionTypes[tag.transaction_type_id]}}</span></td>
+              <td><a class="t-orange" @click="parentModelKey=(tag.tag_id || 0); getSearchTags(parentModelKey)" style="cursor: pointer;"
+                >{{tag.parent || '---'}}</a></td>
+              <td>
+                <a class="btn btn-warning" style="padding:0rem .75rem" href="#transaction-app" @click="editRecord(tag)">Edit</a>
+                <a class="btn btn-danger" style="padding:0rem .75rem" href="#transaction-app" @click="deleteRecord(tag)">Delete</a>
+              </td>
+              <td></td>
+            </tr>
+            <tr>
+              <td colspan="8" v-if="tags.length == 0">
+                <p class="t-blue text-center">No Records Found!</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+
+  <script>
+    var app = new Vue({
+      el: '#transaction-app',
+      data: {
+        editId: null,
+        model: {},
+        tags: [],
+        tree: {},
+        parentTags: {},
+        parentModelKey: 0,
+        transactionTypes: {},
+        showCardView: true,
+      },
+      created() {
+          console.debug('Component has been created!');
+      },
+      methods: {
+        save: function(clearOnlyTagName) {
+          if (this.editId) {
+            axios.put('/tags/'+this.editId, this.model )
+            .then((response) => { this.clear(clearOnlyTagName); });
+          } else {
+            console.debug(this.model)
+            axios.post('/tags', this.model )
+            .then((response) => { this.clear(clearOnlyTagName); });
+          }
+        },
+        getTags: function() {
+          axios.get('/tags')
+          .then((response) => {
+            var res = response.data;
+            res.forEach((item, index) => {
+              this.parentTags[item.id] = item.name;
+              if (item.tag_id == null) {
+                this.tree["id_" +item.id] = item
+                this.tree["id_" +item.id].childs = []
+              }
+            })
+            res.forEach((item, index) => {
+              if (item.tag_id != null) {
+                this.tree["id_" +item.tag_id].childs.push(item)
+              }
+            })
+            this.tags = response.data;
+            console.debug(JSON.stringify(this.tree));
+          });
+        },
+        getTransactionTypes: function() {
+          axios.get('/transaction_types')
+          .then((response) => {
+            var res = response.data;
+            for (const item in res) {
+              this.transactionTypes[res[item].id] = res[item].name;
+            }
+            console.debug(this.transactionTypes);
+          });
+        },
+        getSearchTags: function(key) {
+          axios.get('/tags?parentTag='+key)
+          .then((response) => {
+            this.tags = response.data;
+            console.debug(this.tags);
+          });
+        },
+        editRecord: function(item) {
+            this.model = { ...item };
+            this.editId = item.id;
+        },
+        deleteRecord: function(item) {
+          axios.delete('/tags/'+item.id )
+            .then((response) => { this.clear(false); });
+        },
+        clear(clearOnlyTagName) {
+          if (clearOnlyTagName) {
+            this.model = {
+              name: "",
+              transaction_type_id: this.model.transaction_type_id,
+              tag_id: this.model.tag_id
+            };
+          } else {
+            this.model = { };
+          }
+          this.editId = null;
+          if (this.parentModelKey != null && this.parentModelKey > 0) {
+            this.getSearchTags(this.parentModelKey);
+          } else {
+            this.getTags();
+          }
+        }
+      },
+      mounted() {
+        console.debug('Component has been Mounted!');
+        this.getTransactionTypes();
+        this.getTags();
+      }
+    });
+  </script>
+</html>

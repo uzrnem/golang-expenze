@@ -1,0 +1,26 @@
+package controller
+
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
+
+type User struct {
+	Name  string `json:"name" validate:"required"`
+	Email string `json:"email" validate:"required,email"`
+	ID    string `param:"id" query:"id" form:"id" json:"id" xml:"id"`
+}
+
+func main() {
+	e := echo.New()
+	e.POST("/users", func(c echo.Context) (err error) {
+		u := &User{}
+		errs := Validate(c, u)
+		if len(errs) > 0 {
+			return echo.NewHTTPError(http.StatusBadRequest, errs)
+		}
+		return c.JSON(http.StatusOK, u)
+	})
+	e.Logger.Fatal(e.Start(":1323"))
+}

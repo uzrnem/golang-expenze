@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Statement | Expenze</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./bootstrap.min.css">
+  <link rel="stylesheet" href="./bulma2.css">
+  <script src="./jquery.min.js"></script>
+  <script src="./axios.min.js"></script>
+  <script src="./bootstrap.min.js"></script>
+  <script src="vue-2.6.12.js"></script>
+  <style>
+  body {
+    background-color: #eeeeee;
+    font-size: 17px;
+  }
+  p {
+    margin: 0 !important;
+  }
+  :root {
+    --padding-x-table: 20px;
+  }
+  .table>thead>tr>th {
+    padding-left: var(--padding-x-table);
+    padding-right: var(--padding-x-table);
+  }
+  .table>tbody>tr>td {
+    padding: 0rem var(--padding-x-table);
+    
+  }
+  .pull-left {
+    float: left;
+  }
+  .pull-right {
+    float: right;
+  }
+  .font-14 {
+    font-size: 14px;
+  }
+  .t-blue{
+    color: #0c3940; /* #0a2f35; */
+  }
+  .t-green{
+    color: #196642;
+  }
+  .t-red{
+    color: #791f06;
+  }
+  .t-orange {
+    color: #4a2d03; /*tag*/
+  }
+  .navbar {
+    margin-bottom: 1rem !important;
+  }
+  .c-block {
+    display: block;
+  }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg  navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Expenze</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="index.html">Transaction</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="history.html">History</a>
+        </li>
+        <li class="nav-item dropdown active"
+          onclick="document.getElementById('dd-statement').classList.toggle('c-block')">
+          <a class="nav-link dropdown-toggle"> Statement </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-statement">
+            <a class="dropdown-item active" href="statement_card_view.html">Card View</a>
+            <a class="dropdown-item" href="credit_card.html">Credit Card</a>
+            <a class="dropdown-item" href="statement_line_chart.html">Line Chart</a>
+            <a class="dropdown-item" href="bills_line_chart.html">Bills Line Chart</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown"
+          onclick="document.getElementById('dd-status').classList.toggle('c-block')">
+          <a class="nav-link dropdown-toggle"> Status </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-status">
+            <a class="dropdown-item" href="balance.html">Balance</a>
+            <a class="dropdown-item" href="expenses.html">Expenses</a>
+          </div>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right pr-5">
+        <li class="nav-item">
+          <a class="nav-link" href="account.html">Accounts</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="tag.html">Tag</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+
+  <div class="container" id="transaction-app">
+    <div class="row justify-content-md-center">
+      <div class="col-12">
+        <div class="pull-right">
+          <label >Choose Monthly Statements Duration: 
+            <select id="duration-selection" v-model="duration" @click="getMonthlyStatement(duration)">
+              <option value="0">Overall</option>
+              <option value="1">Last year</option>
+              <option value="2">Last two years</option>
+              <option value="3">Last three years</option>
+              <option value="5">Last five years</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      
+      <div class="col-3 mb-1 p-1" v-if="mainCard">
+        <div class="card p-0">
+          <div class="card-header p-1">Overall</div>
+          <div class="card-body p-0">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item p-1" v-if="mainCard.bills">
+                <amount-statement name="Credit Card: " :percentage="parseInt((mainCard.originExp/mainCard.income)*100)"
+                  original-color="t-blue" :original="mainCard.originExp"
+                  statement-color="t-red" :statement="mainCard.totalBill" ></amount-statement>
+              </li>
+              <li class="list-group-item p-1 t-high-blue" v-for="(bill, card) in mainCard.bills" style="font-size: small;">
+                <amount-statement :name="card"
+                  original-color="t-blue" :original="bill.origin"
+                  statement-color="t-red" :statement="bill.statement" ></amount-statement>
+              </li>
+              <li class="list-group-item p-1" v-if="mainCard.expense">
+                <amount-statement name="Expense:" :percentage="parseInt((mainCard.expense/mainCard.income)*100)"
+                  original-color="t-red" :original="mainCard.expense" ></amount-statement>
+              </li>
+              <li class="list-group-item p-1" v-if="mainCard.salary">
+                <amount-statement name="Salary:"
+                  original-color="t-green" :original="mainCard.income"
+                  statement-color="t-blue" :statement="mainCard.salary" ></amount-statement>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-3 mb-1 p-1" v-for="st in monthlyStatements">
+        <div class="card p-0">
+          <div class="card-header p-1">{{st.mon}} {{st.year}}</div>
+          <div class="card-body p-0">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item p-1" v-if="st.bill">
+                <amount-statement name="Credit Card: " :percentage="st.billPercent"
+                  original-color="t-blue" :original="st.originExp"
+                  statement-color="t-red" :statement="st.bill" ></amount-statement>
+              </li>
+              <li class="list-group-item p-1 t-high-blue" v-for="(bill, card) in st.bills" style="font-size: small;">
+                <amount-statement :name="card" :remark="bill.remarks"
+                  original-color="t-blue" :original="bill.origin"
+                  statement-color="t-red" :statement="bill.statement" ></amount-statement>
+              </li>
+              <li class="list-group-item p-1" v-if="st.expense">
+                <amount-statement name="Expense:" :percentage="st.expensePercent"
+                  original-color="t-red" :original="st.expense" ></amount-statement>
+              </li>
+              <li class="list-group-item p-1">
+                <amount-statement name="Salary:"
+                  original-color="t-green" :original="st.income"
+                  statement-color="t-blue" :statement="st.salary" ></amount-statement>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+  <script>
+    var amountStatement = Vue.component('amount-statement', {
+      data: function() {//() {
+        return {
+          format: new Intl.NumberFormat(
+            'en-IN', 
+            { style: 'currency', currency: 'INR' }
+          )
+        }
+      },
+      methods: {
+        addThing: function() {
+        }
+      },
+      props: //['name', 'original', 'statement', 'percentage', 'remark', 'originalColor', 'statementColor']
+      {
+        name: { type: String, required: true},
+        original: { type: [Number, String]},
+        statement: { type: [Number, String]},
+        remark: { type: String},
+        originalColor: { type: String },
+        statementColor: { type: String }
+      },
+      template: '<div>{{name}} <span class="t-orange" v-if="percentage" style="font-size: small;">({{percentage}} %)</span>'+
+        '<span class="pull-right" :class="originalColor" v-if="original" :title="format.format(statement)">{{format.format(original)}}</span>' +
+        '<br v-if="original && statement" /> ' +
+        '<span v-if="!original || ( statement && ( (original/statement) > 1.05 || (original/statement) < 0.95 ) )" ' +
+          ' class="pull-right" :class="statementColor">~ {{format.format(statement)}}</span>' +
+        '<span class="t-orange" v-if="remark">{{remark}}</span>' +
+      '</div>'
+    })
+
+    var app = new Vue({
+      el: '#transaction-app',
+      data: {
+        editId: null,
+        model: {},
+        accountMap: {},
+        accounts: [],
+        duration: 1,
+        mainCard: {},
+        monthlyStatements: [],
+        format: new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
+      },
+      created() {
+          console.debug('Component has been created!');
+      },
+      methods: {
+        updateAmount: function(event) {
+          var index = event.target.options.selectedIndex
+          var amount = this.accounts[index].amount
+          this.model.amount = 0 - amount
+        },
+        getMonthlyStatement: function(duration) {
+          axios.get('/statements/monthly/'+duration)
+          .then((response) => {
+            this.mainCard = {
+              totalBill: 0,
+              bills: {},
+              expense: 0,
+              salary: 0,
+              originExp: 0,
+              income: 0
+            }
+            var res = response.data;
+            var arr = [];
+            res.forEach((item, index) => {
+              this.mainCard.expense += item.expense
+              this.mainCard.salary += item.salary
+              this.mainCard.income += item.income
+              console.log(item)
+              var bills = {}
+              var originExp = 0
+              if (item.bill != null) {
+                //Statement amount
+                var cards = item.credit.split(',');
+                console.debug("cards: ", cards)
+                cards.forEach((card, cardI) => {
+                  var [cName, cStatement, cRemarks] = this.getCardNameAndExpense(card);
+                  bills[cName] = {
+                    statement: cStatement,
+                    remarks: cRemarks,
+                    origin: 0
+                  }
+                  if (this.mainCard.bills && this.mainCard.bills[cName]) {
+                    this.mainCard.bills[cName].statement += cStatement
+                  } else {
+                    this.mainCard.bills[cName] = {
+                      statement: cStatement,
+                      origin: 0
+                    }
+                  }
+                  this.mainCard.totalBill += cStatement
+                })
+
+                if (item.r_cc && item.r_cc != "") {
+                  //Real Expense monthly amount
+                  var cards = item.r_cc.split(',');
+                  cards.forEach((card, cardI) => {
+                    var [cName, cOrigin] = this.getCardNameAndExpense(card);
+                    originExp += cOrigin
+                    this.mainCard.originExp += cOrigin
+                    if (bills && bills[cName]) {
+                      bills[cName].origin = cOrigin
+                    } else {
+                      bills[cName] = {
+                        statement: 0,
+                        origin: cOrigin
+                      }
+                    }
+                    if (this.mainCard.bills && this.mainCard.bills[cName]) {
+                      this.mainCard.bills[cName].origin += cOrigin
+                    } else {
+                      this.mainCard.bills[cName] = {
+                        statement: 0,
+                        origin: cOrigin
+                      }
+                    }
+                  })
+                }
+                item.originExp = originExp
+                item.bills = bills
+                if (item.salary != null) {
+                  item.billPercent = parseInt((item.originExp/item.income)*100)
+                }
+              }
+              if (item.expense != null & item.salary != null) {
+                item.expensePercent = parseInt((item.expense/item.income)*100)
+              }
+              arr.push(item)
+            });
+            this.monthlyStatements = arr
+          });
+        },
+        getCardNameAndExpense: function(item) {
+          var bill = item.split(':');
+          return [bill[0], parseFloat(bill[1] || "0"), bill[2] || ""]
+        },
+        getAccounts: function() {
+          axios.get('/accounts/type/Credit')
+          .then((response) => {
+            var res = response.data;
+            for (const item in res) {
+              this.accountMap[res[item].id] = res[item].name;
+            }
+            console.debug(this.accountMap)
+            this.accounts = res;
+          });
+        },
+        clear() {
+          this.model = {
+            account_id: null,
+            amount: null,
+            event_date: new Date().toISOString().slice(0,10),
+            remarks: null
+          }
+          this.editId = null;
+          this.getMonthlyStatement(this.duration);
+        }
+      },
+      mounted() {
+        console.debug('Component has been Mounted!');
+        this.clear();
+        this.getAccounts();
+      },
+      components: { amountStatement }
+    });
+  </script>
+</html>
