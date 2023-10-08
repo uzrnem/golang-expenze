@@ -18,7 +18,7 @@ func Load() error {
 		utils.ReadEnvOrDefault("EXP_CONFIG_PASS_NAME", "root"),
 		utils.ReadEnvOrDefault("EXP_CONFIG_HOST_NAME", "127.0.0.1"),
 		utils.ReadEnvOrDefault("EXP_CONFIG_PORT_NUMB", "3306"),
-		utils.ReadEnvOrDefault("EXP_CONFIG_DATABASE_NAME", "expense_dev"),
+		utils.ReadEnvOrDefault("EXP_CONFIG_DATABASE_NAME", "expense"),
 	)
 	fmt.Println(dsn)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})

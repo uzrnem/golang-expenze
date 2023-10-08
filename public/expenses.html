@@ -46,8 +46,6 @@
           <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-statement">
             <a class="dropdown-item" href="statement_card_view.html">Card View</a>
             <a class="dropdown-item" href="credit_card.html">Credit Card</a>
-            <a class="dropdown-item" href="statement_line_chart.html">Line Chart</a>
-            <a class="dropdown-item" href="bills_line_chart.html">Bills Line Chart</a>
           </div>
         </li>
         <li class="nav-item dropdown active"
@@ -111,14 +109,21 @@
   var urlString = dateToday.getFullYear() + '' + ("0" + (dateToday.getMonth() + 1)).slice(-2);
   // Draw the chart and set the chart values
   function drawChart() {
-    axios.get('accounts/chart/expenses/' + urlString)
+    axios.get('expenses/' + urlString)
     .then((response) => {
-      var data = google.visualization.arrayToDataTable(response.data.holding);
+      var expenses = 0.0
+      holding_array = [['Tag', 'Amount']]
+      response.data.holding.forEach((item, i) => {
+        holding_array.push([item['name'], parseFloat(item['amount'])])
+        expenses = expenses + parseFloat(item['amount']);
+      });
+
+      var data = google.visualization.arrayToDataTable(holding_array);
       var formatter = new google.visualization.NumberFormat(
         {negativeColor: 'red', negativeParens: true, pattern: '₹ ##,##,##,###.##'});
       formatter.format(data, 1);
       var options = {
-        title:'My Expenses of ' + format.format(response.data.expenses), height: 600, pieSliceText: 'percentage', is3D: true,
+        title:'My Expenses of ' + format.format(expenses), height: 600, pieSliceText: 'percentage', is3D: true,
         chartArea: { width : '90%', height: '80%'}, legend: {
             position: 'labeled',
             labeledValueText: 'both',
@@ -172,11 +177,11 @@
     for (const obj of list) {
       var td1 = document.createElement("td");
       td1.style = "padding: 0 0 0 0.2rem";
-      td1.innerHTML = obj.account;
+      td1.innerHTML = obj.name;
 
       var td2 = document.createElement("td");
       td2.style = "padding: 0px";
-      td2.innerHTML = obj.expense;
+      td2.innerHTML = obj.amount;
 
       var tr = document.createElement("tr");
       tr.appendChild(td1);

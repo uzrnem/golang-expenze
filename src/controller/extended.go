@@ -224,6 +224,61 @@ func (t *ExtController) Statement(c echo.Context) error {
 	return c.JSON(http.StatusOK, list)
 }
 
+type MonYear struct {
+	Mon   int32  `json:"mon"`
+	Year  int    `json:"year"`
+	Month string `json:"month"`
+}
+
+func (t *ExtController) ExpenseSheet(c echo.Context) error {
+	month := c.Param("monyear")
+
+	monthCond := ""
+	if utils.IsValueNonZero(month) {
+		monthCond = fmt.Sprintf(" AND EXTRACT(YEAR_MONTH FROM event_date) = %s ", month)
+	}
+	holdings := &[]FullAccountType{}
+	table := "activities as act"
+	silect := "COALESCE(sub.name, tag.name) as name, SUM(act.amount) as amount"
+	joins := `LEFT JOIN tags tag ON tag.id = act.tag_id
+	LEFT JOIN tags sub ON sub.id = act.sub_tag_id`
+	where := fmt.Sprintf("act.transaction_type_id = 2 %s ", monthCond)
+	groupBy := "tag.name, sub.name"
+	orderBy := "SUM(act.amount) ASC"
+	err := t.repo.FetchWithFullQuery(c, holdings, table, silect, joins, where, groupBy, orderBy, 0, 0)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	monYear := &[]MonYear{}
+	table = "activities"
+	silect = "EXTRACT(YEAR_MONTH FROM event_date) as mon, MONTHNAME(event_date) as month, year(event_date) as year"
+	where = "transaction_type_id = 2"
+	groupBy = "EXTRACT(YEAR_MONTH FROM event_date), MONTHNAME(event_date), year(event_date)"
+	orderBy = "EXTRACT(YEAR_MONTH FROM event_date) DESC"
+	err = t.repo.FetchWithFullQuery(c, monYear, table, silect, "", where, groupBy, orderBy, 0, 0)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	expenseByAccount := &[]FullStatement{}
+	table = "activities as act"
+	silect = "a.name, SUM(act.amount) as amount"
+	joins = "LEFT JOIN accounts a ON act.from_account_id = a.id"
+	where = fmt.Sprintf("act.transaction_type_id = 2 %s ", monthCond)
+	groupBy = "a.id, a.name, act.from_account_id"
+	orderBy = "SUM(act.amount) DESC"
+	err = t.repo.FetchWithFullQuery(c, expenseByAccount, table, silect, joins, where, groupBy, orderBy, 0, 0)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return c.JSON(http.StatusOK, map[string]any{
+		"holding":          holdings,
+		"months":           monYear,
+		"expenseByAccount": expenseByAccount,
+	})
+}
+
 /* func (t *ExtController) Statement(c echo.Context) error {
 	duration := c.Param("duration")
 	date_condition := fmt.Sprintf(" event_date ", duration)

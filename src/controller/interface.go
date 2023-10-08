@@ -27,4 +27,5 @@ type ExtendedController interface {
 	GetTagsByTranscationHits(c echo.Context) error
 	BalanceSheet(c echo.Context) error
 	Statement(c echo.Context) error
+	ExpenseSheet(c echo.Context) error
 }
