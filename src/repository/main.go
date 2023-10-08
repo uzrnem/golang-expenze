@@ -1,9 +1,8 @@
 package repository
 
 import (
-	//"fmt"
-	"strings"
 	"expensez/config/mysql"
+	"strings"
 
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
@@ -96,113 +95,3 @@ func (r *RepoStrct) FetchWithFullQuery(c echo.Context, list any, table, silect, 
 func (r *RepoStrct) FetchRow(sql string, res any) {
 	r.MysqlDB.Debug().Raw(sql).Scan(res)
 }
-
-
-/*
-	sql := r.MysqlDB.ToSQL(func(tx *gorm.DB) *gorm.DB {
-		db := tx.Table(table)
-		return db.Find(list)
-	  })
-	fmt.Println("SQL : ", sql)
-	rows, err := db.Having("sum(amount) > ?", 100).Rows()
-&{
-	DB:0x4000171920 
-	TableExpr:0x40001719e0 
-	Table:act Model:0x400008ed80 
-	Unscoped:false 
-	Dest:0x400008ed80 
-	ReflectValue:<[]controller.FullActivity Value> 
-	Clauses:map[
-		FROM:{
-			Name:FROM 
-			BeforeExpression:<nil>
-			AfterNameExpression:<nil> 
-			AfterExpression:<nil> 
-			Expression:{
-				Tables:[] 
-				Joins:[
-					{
-						Type: 
-						Table:{
-							Name: 
-							Alias: 
-							Raw:false
-						}
-						ON:{
-							Exprs:[]
-						}
-						Using:[]
-						Expression:{
-							SQL:LEFT JOIN tags tg ON tg.id = act.tag_id 
-	LEFT JOIN tags s_tg ON s_tg.id = act.sub_tag_id 
-	LEFT JOIN transaction_types ON transaction_types.id = act.transaction_type_id 
-	LEFT JOIN accounts as fa ON fa.id = act.from_account_id 
-	LEFT JOIN accounts as ta ON ta.id = act.to_account_id Vars:[]
-						}
-					}
-				]
-			}
-			Builder:<nil>
-		}
-		LIMIT:{
-			Name: BeforeExpression:<nil> 
-			AfterNameExpression:<nil> 
-			AfterExpression:<nil> 
-			Expression:{Limit:0x400000eb20 Offset:0}
-			Builder:<nil>
-		}
-		ORDER BY:{
-			Name:ORDER BY 
-			BeforeExpression:<nil> 
-			AfterNameExpression:<nil> 
-			AfterExpression:<nil> 
-			Expression:{
-				Columns:[
-					{
-						Column:{
-							Table: 
-							Name:act.created_at DESC, act.event_date DESC, act.id DESC 
-							Alias: 
-							Raw:true
-						}
-						Desc:false
-						Reorder:false
-					}
-				]
-				Expression:<nil>
-			}
-			Builder:<nil>
-		}
-		SELECT:{
-			Name:SELECT 
-			BeforeExpression:<nil> 
-			AfterNameExpression:<nil> 
-			AfterExpression:<nil> 
-			Expression:{
-				Distinct:false 
-				Columns:[
-					{
-						Table: 
-						Name:act.*, 
-	fa.name as from_account, ta.name as to_account, tg.name as tag, s_tg.name as sub_tag, 
-	transaction_types.name as transaction_type 
-						Alias:
-						Raw:true
-					}
-				]
-				Expression:<nil>
-			}
-			Builder:<nil>
-		}
-	]
-	BuildClauses:[]
-	Distinct:false
-	Selects:[act.*, 
-	fa.name as from_account, ta.name as to_account, tg.name as tag, s_tg.name as sub_tag, 
-	transaction_types.name as transaction_type]
-	Omits:[] 
-	Joins:[] 
-	Preloads:map[] 
-	Settings:{mu:{state:0 sema:0} read:{_:[] _:{} v:<nil>} dirty:map[] misses:0} ConnPool:0x4000092a90 Schema:expensez/src/controller.FullActivity Context:context.Background RaiseErrorOnNotFound:false SkipHooks:false SQL:{addr:<nil> buf:[]} Vars:[] CurDestIndex:0 attrs:[] assigns:[] scopes:[]
-}
-*/

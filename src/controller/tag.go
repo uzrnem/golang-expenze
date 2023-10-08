@@ -1,13 +1,12 @@
 package controller
 
 import (
+	"expensez/pkg/utils"
 	v "expensez/pkg/validator"
 	"expensez/src/models"
 	"expensez/src/repository"
 	"net/http"
 	"strconv"
-	//"strings"
-	"expensez/pkg/utils"
 
 	"github.com/labstack/echo"
 )
@@ -81,13 +80,13 @@ func (t *TagController) Update(c echo.Context) error {
 }
 
 type FullTag struct {
-	ID uint   `json:"id"`
-	Name string   `json:"name"`
-	TagID uint   `json:"tag_id"`
-	Parent string   `json:"parent"`
+	ID                uint   `json:"id"`
+	Name              string `json:"name"`
+	TagID             uint   `json:"tag_id"`
+	Parent            string `json:"parent"`
 	TransactionTypeId uint   `json:"transaction_type_id"`
-	Type string   `json:"type"`
-	TagCount uint   `json:"tag_count"`
+	Type              string `json:"type"`
+	TagCount          uint   `json:"tag_count"`
 }
 
 func (t *TagController) List(c echo.Context) error {

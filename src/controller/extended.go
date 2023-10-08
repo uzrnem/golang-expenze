@@ -1,13 +1,13 @@
 package controller
 
-import ( "fmt"
-	"strings"
+import (
+	"expensez/pkg/utils"
 	v "expensez/pkg/validator"
 	"expensez/src/models"
 	"expensez/src/repository"
+	"fmt"
 	"net/http"
-	"expensez/pkg/utils"
-	//"strconv"
+	"strings"
 
 	"github.com/labstack/echo"
 )
@@ -30,21 +30,13 @@ func (t *ExtController) FindAccountByType(c echo.Context) error {
 	account_type := c.Param("accountType")
 	fmt.Println("account_type: " + account_type)
 	list := &[]models.Account{}
-	where := "account_type_id in (SELECT id FROM account_types where name = '"+ account_type +"')"
+	where := "account_type_id in (SELECT id FROM account_types where lower(name) = '" + strings.ToLower(account_type) + "')"
 	order := "name ASC"
 	err := t.repo.FetchWithQuery(c, list, where, order)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return c.JSON(http.StatusOK, list)
-}
-
-type FullExtended12 struct {
-	FromAccount string   `json:"from_account"`
-	ToAccount string   `json:"to_account"`
-	Tag string   `json:"tag"`
-	SubTag string   `json:"sub_tag"`
-	TransactionaType string   `json:"transaction_type"`
 }
 
 func (t *ExtController) GetTagsByTranscationHits(c echo.Context) error {
@@ -58,11 +50,11 @@ func (t *ExtController) GetTagsByTranscationHits(c echo.Context) error {
 		transactionID = 2 //debit
 	}
 	mapp := map[string]any{
-		"tags": nil,
-		"sub_tags": nil,
-		"tag_id": utils.StringToInt(tagID),
+		"tags":       nil,
+		"sub_tags":   nil,
+		"tag_id":     utils.StringToInt(tagID),
 		"sub_tag_id": 0,
-		"remarks": "",
+		"remarks":    "",
 	}
 	if fromAccountID == "0" && toAccountID == "0" {
 		mapp["tag_id"] = 0
@@ -83,7 +75,7 @@ func (t *ExtController) GetTagsByTranscationHits(c echo.Context) error {
 	}
 	conditions = append(conditions, toQuery)
 
-    //Transaction Id Condition
+	//Transaction Id Condition
 	transactionQuery := " transaction_type_id = " + fmt.Sprintf("%d", transactionID) + " "
 	conditions = append(conditions, transactionQuery)
 
@@ -108,7 +100,7 @@ func (t *ExtController) GetTagsByTranscationHits(c echo.Context) error {
 		mapp["tag_id"] = actRes.TagID
 	}
 	if utils.IsValueNonZero(tagID) {
-		conditions = append(conditions, "tag_id = " + tagID)
+		conditions = append(conditions, "tag_id = "+tagID)
 		subTagConditions := strings.Join(conditions[:], " AND ")
 		actRes := &models.Activity{}
 		table := "activities"
@@ -121,7 +113,7 @@ func (t *ExtController) GetTagsByTranscationHits(c echo.Context) error {
 		mapp["remarks"] = actRes.Remarks
 
 		tagList := &[]models.Tag{}
-		err = t.repo.FetchWithQuery(c, tagList, "tag_id = " + tagID, "")
+		err = t.repo.FetchWithQuery(c, tagList, "tag_id = "+tagID, "")
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
@@ -157,60 +149,3 @@ func (t *ExtController) BalanceSheet(c echo.Context) error {
 		"account_balance": actRes,
 	})
 }
-
-
-/*
-Account.share = function(result) {
-	(async () => {
-	  try {
-		const holding_balance = await config.query ("select 
-		t.name as name, SUM(a.amount) as amount 
-		from accounts a 
-		left join account_types t on a.account_type_id = t.id 
-		where a.amount !=0 and a.is_snapshot_disable = 0 and a.is_closed != 1 
-		group by a.account_type_id order by t.name='Saving' desc, t.name='Credit' desc, t.name='Wallet' desc, 
-		t.name='Stocks Equity' desc, t.name='Loan' desc, t.name='Mutual Funds' desc, t.name='Deposit' desc;");
-		holding_array = [['Account', 'Amount per Account']]
-		holding_balance.forEach((item, i) => {
-		  if (item['Account'] == 'Credit') {
-			ccBill = 0 - item['Amount per Account']
-			//holding_array.push([item['Account'], ccBill])
-		  } else {
-			holding_array.push([item['Account'], item['Amount per Account']])
-		  }
-		  if (item['Account'] == 'Deposit' || item['Account'] == 'Stocks Equity' || item['Account'] == 'Mutual Funds') {
-  
-		  } else if (item['Account'] == 'Loan') {
-			loan = item['Amount per Account']
-		  } else {
-			total = total + item['Amount per Account']
-		  }
-		});
-
-
-		
-  
-		const account_balance = await config.query(
-		" select a.name as account, t.name as type, a.amount as amount 
-		from accounts a 
-		left join account_types t on a.account_type_id = t.id 
-		where a.amount !=0 and a.is_snapshot_disable = 0 and a.is_closed != 1 
-		order by t.name='Saving' desc, t.name='Credit' desc, t.name='Wallet' desc, 
-		t.name='Deposit' desc, t.name='Loan' desc, t.name='Stocks Equity', a.name;");
-  
-		var ccBills = {'Balance' : 0}
-		var total = 0.0
-		var ccBill = 0
-		var loan = 0.0
-		console.debug(holding_balance)
-		delete ccBills['CC Bill']
-		console.debug('total: ', total, 'Loan: ', loan, 'cc bill: ', ccBill)
-		cc_array = [['Account', 'Amount per Account']]
-		cc_array.push(['Loan', loan])
-		cc_array.push(['CC Bill', ccBill])
-		cc_array.push(['Balance', total])
-		result(null, { holding: holding_array, balance: account_balance, totalBalance: cc_array });
-	  } finally {
-	  }
-	})()
-  };*/

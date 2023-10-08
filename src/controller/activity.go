@@ -1,14 +1,15 @@
 package controller
 
 import (
+	"expensez/pkg/utils"
 	v "expensez/pkg/validator"
 	"expensez/src/models"
 	"expensez/src/repository"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
-	"fmt"
-	"expensez/pkg/utils"
+
 	"github.com/labstack/echo"
 )
 
@@ -24,6 +25,19 @@ type ActivityController struct {
 func ActivityLoad() error {
 	ActivityCtrl = &ActivityController{repo: repository.Repo, validator: *v.Validator}
 	return nil
+}
+
+type FullActivity struct {
+	models.Activity
+	FromAccount       string  `json:"from_account"`
+	ToAccount         string  `json:"to_account"`
+	Tag               string  `json:"tag"`
+	SubTag            string  `json:"sub_tag"`
+	TransactionType   string  `json:"transaction_type"`
+	FpPreviousBalance float64 `json:"fp_previous_balance" gorm:"column:fp_previous_balance"`
+	FpBalance         float64 `json:"fp_balance" gorm:"column:fp_balance"`
+	TpPreviousBalance float64 `json:"tp_previous_balance" gorm:"column:tp_previous_balance"`
+	TpBalance         float64 `json:"tp_balance" gorm:"column:tp_balance"`
 }
 
 func (t *ActivityController) Create(c echo.Context) error {
@@ -79,20 +93,6 @@ func (t *ActivityController) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-
-type FullActivity struct {
-	models.Activity
-	FromAccount string   `json:"from_account"`
-	ToAccount string   `json:"to_account"`
-	Tag string   `json:"tag"`
-	SubTag string   `json:"sub_tag"`
-	TransactionType string   `json:"transaction_type"`
-	FpPreviousBalance          float64   `json:"fp_previous_balance" gorm:"column:fp_previous_balance"`
-	FpBalance          float64   `json:"fp_balance" gorm:"column:fp_balance"`
-	TpPreviousBalance          float64   `json:"tp_previous_balance" gorm:"column:tp_previous_balance"`
-	TpBalance          float64   `json:"tp_balance" gorm:"column:tp_balance"`
-}
-
 func (t *ActivityController) List(c echo.Context) error {
 	tagID := c.QueryParam("tag_id")
 	accountID := c.QueryParam("account_id")
@@ -112,7 +112,7 @@ func (t *ActivityController) List(c echo.Context) error {
 	if utils.IsValueNonZero(accountID) {
 		condTag := fmt.Sprintf(" ( act.from_account_id = %s or act.to_account_id = %s ) ", accountID, accountID)
 		if utils.IsValueNonZero(accountKey) {
-			condTag = fmt.Sprintf(" ( ( act.from_account_id = %s and act.to_account_id = %s ) or ( act.from_account_id = $s and act.to_account_id = %s ) ) ", accountID, accountKey, accountKey, accountID)
+			condTag = fmt.Sprintf(" ( ( act.from_account_id = %s and act.to_account_id = %s ) or ( act.from_account_id = %s and act.to_account_id = %s ) ) ", accountID, accountKey, accountKey, accountID)
 		}
 		conditions = append(conditions, condTag)
 	}
@@ -129,15 +129,14 @@ func (t *ActivityController) List(c echo.Context) error {
 		conditions = append(conditions, condTag)
 	}
 	if utils.TrimSpace(remarks) != "" {
-		condTag := " act.remarks like '%" + remarks + "%' "
+		condTag := " lower(act.remarks) like '%" + strings.ToLower(remarks) + "%' "
 		conditions = append(conditions, condTag)
 	}
-	
 
 	list := &[]FullActivity{}
 	where := strings.Join(conditions[:], " AND ")
 	limit := utils.StringToInt(pageSize)
-	offset := (utils.StringToInt(pageIndex) - 1 ) * limit
+	offset := (utils.StringToInt(pageIndex) - 1) * limit
 	table := "`activities` as act"
 	silect := `act.id, act.from_account_id, act.to_account_id, act.tag_id, act.amount, act.sub_tag_id, 
 	DATE_FORMAT(act.event_date, "%Y-%m-%d") as event_date, act.remarks, act.transaction_type_id, act.created_at, act.updated_at,
@@ -161,31 +160,12 @@ func (t *ActivityController) List(c echo.Context) error {
 	if utils.TrimSpace(where) != "" {
 		whereCond = fmt.Sprintf(" WHERE %s ", where)
 	}
-	t.repo.FetchRow("SELECT COUNT(act.id) as count FROM `activities` as act " + whereCond, &count)
-	t.repo.FetchRow("SELECT SUM(act.amount) as sum FROM `activities` as act " + whereCond, &sum)
+	t.repo.FetchRow("SELECT COUNT(act.id) as count FROM `activities` as act "+whereCond, &count)
+	t.repo.FetchRow("SELECT SUM(act.amount) as sum FROM `activities` as act "+whereCond, &sum)
 
 	return c.JSON(http.StatusOK, map[string]any{
-		"list": list,
+		"list":  list,
 		"total": count,
-		"sum": sum,
+		"sum":   sum,
 	})
-}
-
-func (t *ActivityController) ListOld(c echo.Context) error {
-	list := &[]FullActivity{}
-	table := "`activities` as act"
-	silect := `act.*, DATE_FORMAT(act.event_date, "%M %d, %Y") as event_date, 
-	fa.name as from_account, ta.name as to_account, tg.name as tag, s_tg.name as sub_tag, 
-	transaction_types.name as transaction_type`
-	joins := `LEFT JOIN tags tg ON tg.id = act.tag_id 
-	LEFT JOIN tags s_tg ON s_tg.id = act.sub_tag_id 
-	LEFT JOIN transaction_types ON transaction_types.id = act.transaction_type_id 
-	LEFT JOIN accounts as fa ON fa.id = act.from_account_id 
-	LEFT JOIN accounts as ta ON ta.id = act.to_account_id`
-	orderBy := "act.created_at DESC, act.event_date DESC, act.id DESC"
-	err := t.repo.FetchWithFullQuery(c, list, table, silect, joins, "", "", orderBy, 5, 0)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	return c.JSON(http.StatusOK, list)
 }

@@ -35,7 +35,6 @@ func main() {
 	e.GET("/accounts/type/:accountType", controller.ExtendedCtrl.FindAccountByType)
 	e.GET("/tags/transactions/hits", controller.ExtendedCtrl.GetTagsByTranscationHits)
 	e.GET("/accounts/chart/share", controller.ExtendedCtrl.BalanceSheet)
-	
 
 	e.Static("/", "public")
 	port := utils.ReadEnvOrDefault("SERVER_PORT", "9001")

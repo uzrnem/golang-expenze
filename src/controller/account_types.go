@@ -26,7 +26,7 @@ func AccountTypeLoad() error {
 
 type FullAccountType struct {
 	models.AccountType
-	Amount          float64   `json:"amount,string" gorm:"column:amount"`
+	Amount float64 `json:"amount,string" gorm:"column:amount"`
 }
 
 func (t *AccountTypeController) Create(c echo.Context) error {
