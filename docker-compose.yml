@@ -31,10 +31,11 @@ services:
     networks:
       - mysql-database
 
-  expense1:
+  go-expense:
     depends_on:
       - mysqldb
-    image: uzrnem/expenze:0.5
+    image: uzrnem/expenze:0.2
+    container_name: goexpense
     environment:
       EXP_CONFIG_DATABASE_NAME: expense_dev
       EXP_CONFIG_USER_NAME: root
@@ -45,8 +46,6 @@ services:
       - 9001:9001
     networks:
       - mysql-database
-    profiles:
-      - advance
 
   expense:
     depends_on:
@@ -67,6 +66,8 @@ services:
       - 9001:9001
     networks:
       - mysql-database
+    profiles:
+      - advance
 
 networks:
   mysql-database:

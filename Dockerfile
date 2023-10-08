@@ -1,3 +1,4 @@
+# docker build . -t uzrnem/expense:0.3
 FROM golang:1.21rc2-alpine3.18 AS build
 WORKDIR /temp
 COPY go.mod go.sum ./
