@@ -129,13 +129,14 @@
             </div>
             <div class="form-group col-xs-4 col-sm-4 col-md-4">
               <label for="amount">Amount</label>
-              <input type="text" class="form-control" id="amount" placeholder="Amount" v-model="model.amount">
+              <input type="number" class="form-control" id="amount" placeholder="Amount" v-model="model.amount">
             </div>
             <div class="form-group col-xs-4 col-sm-4 col-md-4">
               <label for="amount">Account Types</label>
               <select id="disabledSelect" class="form-control" v-model="model.account_type_id">
                 <option value="" disabled selected>Type</option>
-                <option  v-for="(item, key) in accountTypes" :value="key" v-bind:key="key">{{item}}</option>
+                <option v-for="(item, key) in accountTypes" :value="key" v-bind:key="key"
+                  v-if="accountTypes && accountTypes[key]">{{accountTypes[key].name}}</option>
               </select>
             </div>
             <div class="form-group col-xs-2 col-sm-2 col-md-2">
@@ -175,9 +176,9 @@
             <span class="badge badge-pill badge-primary m-1" v-if="account.is_frequent">Frequent</span>
             <span class="badge badge-pill badge-secondary m-1" v-if="account.is_snapshot_disable">No Snapshot</span>
             <span class="badge badge-pill badge-danger m-1" v-if="account.is_closed">Closed</span>
-            <ul class="list-group list-group-flush">
+            <ul class="list-group list-group-flush" v-if="accountTypes && accountTypes[account.account_type_id]">
               <li class="custom-group-item p-1">
-                {{accountTypes[account.account_type_id]}} :
+                {{accountTypes[account.account_type_id].name}}
                 <span class="pull-right"
                   v-bind:class="{ 't-blue': account.amount==0, 't-green': account.amount>0, 't-red': account.amount<0 }"
                 >{{format.format(account.amount)}}</span>
@@ -217,7 +218,7 @@
           }
         },
         getAccounts: function() {
-          axios.get('/accounts?all_accounts=true')
+          axios.get('/accounts?type=all_accounts')
           .then((response) => {
             this.accounts = response.data;
           });
@@ -226,9 +227,9 @@
           axios.get('/account_types')
           .then((response) => {
             var res = response.data;
-            for (const item in res) {
-              this.accountTypes[res[item].id] = res[item].name;
-            }
+            res.forEach(item => {
+              this.accountTypes[item.id] = item;
+            })
           });
         },
         editRecord: function(item) {
@@ -250,43 +251,3 @@
     });
   </script>
 </html>
-
-<!-- 
-<div class="col-lg-12 col-md-12 col-sm-12">
-  <br />
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th></th>
-        <th>Name</th>
-        <th>Amount</th>
-        <th>Type</th>
-        <th>Frequent</th>
-        <th>Inactive</th>
-        <th>Closed</th>
-        <th></th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="account in accounts">
-        <td></td>
-        <td><span class="t-orange">{{account.name}}</span></td>
-        <td><span class="t-orange pull-right">{{format.format(account.amount)}}</span></td>
-        <td><span class="t-orange">{{accountTypes[account.account_type_id]}}</span></td>
-        <td><span class="t-orange">{{account.is_frequent ? 'True' : 'False'}}</span></td>
-        <td><span class="t-orange">{{account.is_snapshot_disable ? 'True' : 'False'}}</span></td>
-        <td><span class="t-orange">{{account.is_closed ? 'True' : 'False'}}</span></td>
-        <td>
-          <a class="btn btn-primary" href="#transaction-app" @click="editRecord(account)">Edit</a>
-        </td>
-        <td></td>
-      </tr>
-      <tr>
-        <td colspan="8" v-if="accounts.length == 0">
-          <p class="t-blue text-center">No Records Found!</p>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div> -->

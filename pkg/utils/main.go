@@ -1,6 +1,11 @@
 package utils
 
-import "os"
+import (
+	"os"
+	"fmt"
+	"strings"
+	"strconv"
+)
 
 // ReadEnvOrDefault returns the value of the environment variable specified by 'key',
 // or the 'defaultValue' if the environment variable is not set.
@@ -31,4 +36,25 @@ func GetOrDefault(value, defaultValue string) string {
 		return defaultValue
 	}
 	return value
+}
+
+func IsValueNonZero(value string) bool {
+	val := strings.TrimSpace(value)
+	return val != "" && val != "0"
+}
+
+func TrimSpace(value string) string {
+	return strings.TrimSpace(value)
+}
+
+func IntToString(val int) string {
+	return fmt.Sprintf("%d", val)
+}
+
+func StringToInt(val string) int {
+	n, err := strconv.Atoi(val)
+	if err != nil {
+		return 0
+	}
+	return n
 }

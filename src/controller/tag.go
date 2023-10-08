@@ -6,6 +6,8 @@ import (
 	"expensez/src/repository"
 	"net/http"
 	"strconv"
+	//"strings"
+	"expensez/pkg/utils"
 
 	"github.com/labstack/echo"
 )
@@ -19,7 +21,7 @@ type TagController struct {
 	validator v.CustomValidator
 }
 
-func Load() error {
+func TagLoad() error {
 	TagCtrl = &TagController{repo: repository.Repo, validator: *v.Validator}
 	return nil
 }
@@ -71,18 +73,42 @@ func (t *TagController) Update(c echo.Context) error {
 		return err
 	}
 	modl.ID = uint(id)
-	res, err := t.repo.Update(c, models.Tag{ID: uint(id)})
+	res, err := t.repo.Update(c, modl)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return c.JSON(http.StatusOK, res)
 }
 
+type FullTag struct {
+	ID uint   `json:"id"`
+	Name string   `json:"name"`
+	TagID uint   `json:"tag_id"`
+	Parent string   `json:"parent"`
+	TransactionTypeId uint   `json:"transaction_type_id"`
+	Type string   `json:"type"`
+	TagCount uint   `json:"tag_count"`
+}
+
 func (t *TagController) List(c echo.Context) error {
-	list := &[]models.Tag{}
-	res, err := t.repo.List(c, list)
+	parentTag := c.QueryParam("parentTag")
+	list := &[]FullTag{}
+	where := ""
+	if utils.IsValueNonZero(parentTag) {
+		where = parentTag + " IN (t.id, t.tag_id)"
+	}
+	table := "tags t"
+	silect := `t.id, t.name, t.tag_id, p.name AS parent, t.transaction_type_id, 
+	tt.name AS type, COUNT(DISTINCT(m.id)) AS tag_count`
+	joins := `LEFT JOIN tags p ON t.tag_id = p.id 
+	LEFT JOIN tags c ON t.id = c.tag_id 
+	LEFT JOIN transaction_types tt ON t.transaction_type_id = tt.id 
+	LEFT JOIN activities m ON t.id in (m.tag_id, m.sub_tag_id) AND m.event_date > DATE_SUB(now(), INTERVAL 6 MONTH)`
+	groupBy := "t.id, t.name, t.tag_id, p.name, t.transaction_type_id, tt.name"
+	orderBy := "COUNT(DISTINCT(c.id)) DESC, t.name ASC"
+	err := t.repo.FetchWithFullQuery(c, list, table, silect, joins, where, groupBy, orderBy, 0, 0)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, list)
 }

@@ -26,7 +26,14 @@ func Load() error {
 	loaders := []Loader{
 		{load: mysql.Load, err: "MysqlDB: failed to load"},
 		{load: repository.Load, err: "BaseRepository: failed to load"},
-		{load: controller.Load, err: "TagController: failed to load"},
+		{load: controller.TagLoad, err: "TagController: failed to load"},
+		{load: controller.TransactionTypeLoad, err: "TransactionTypeController: failed to load"},
+		{load: controller.AccountTypeLoad, err: "AccountTypeController: failed to load"},
+		{load: controller.AccountLoad, err: "AccountController: failed to load"},
+		{load: controller.ActivityLoad, err: "ActivityController: failed to load"},
+		{load: controller.PassbookLoad, err: "PassbookController: failed to load"},
+		{load: controller.StatementLoad, err: "StatementController: failed to load"},
+		{load: controller.ExtendedLoad, err: "ExtendedController: failed to load"},
 	}
 
 	err := validator.Load(ErrorMap)

@@ -25,9 +25,19 @@ func main() {
 
 	e := echo.New()
 	routes.SetupMiddlerware(e)
-	routes.SetupRoutes(e, "/tag", controller.TagCtrl)
+	routes.SetupRoutes(e, "/tags", controller.TagCtrl)
+	routes.SetupRoutes(e, "/transaction_types", controller.TransactionTypeCtrl)
+	routes.SetupRoutes(e, "/accounts", controller.AccountCtrl)
+	routes.SetupRoutes(e, "/activities", controller.ActivityCtrl)
+	routes.SetupRoutes(e, "/passbooks", controller.PassbookCtrl)
+	routes.SetupRoutes(e, "/statements", controller.StatementCtrl)
+	routes.SetupRoutes(e, "/account_types", controller.AccountTypeCtrl)
+	e.GET("/accounts/type/:accountType", controller.ExtendedCtrl.FindAccountByType)
+	e.GET("/tags/transactions/hits", controller.ExtendedCtrl.GetTagsByTranscationHits)
+	e.GET("/accounts/chart/share", controller.ExtendedCtrl.BalanceSheet)
+	
 
-	//utils.ReadEnvOrDefault("user", "root")
+	e.Static("/", "public")
 	port := utils.ReadEnvOrDefault("SERVER_PORT", "9001")
 	mainServer := &http.Server{
 		Addr:    ":" + port,

@@ -21,3 +21,9 @@ type Controller interface {
 	List(c echo.Context) error
 	Update(c echo.Context) error
 }
+
+type ExtendedController interface {
+	FindAccountByType(c echo.Context) error
+	GetTagsByTranscationHits(c echo.Context) error
+	BalanceSheet(c echo.Context) error
+}

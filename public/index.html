@@ -242,9 +242,13 @@
                 </div>
                 <div class="card-body" style="height: 24px;">
                   <div class="pull-left t-orange">{{passbook.comment}}</div>
-                  <div class="ml-auto pull-right">
-                    <span class="font-14 t-blue-green">{{format.format(passbook.previous_balance)}} / </span>
-                    <span class="t-blue">{{format.format(passbook.balance)}}</span>
+                  <div class="ml-auto pull-right" v-if="transaction.account_id == passbook.from_account_id">
+                    <span class="font-14 t-blue-green">{{format.format(passbook.fp_previous_balance)}} / </span>
+                    <span class="t-blue">{{format.format(passbook.fp_balance)}}</span>
+                  </div>
+                  <div class="ml-auto pull-right" v-if="transaction.account_id == passbook.to_account_id">
+                    <span class="font-14 t-blue-green">{{format.format(passbook.tp_previous_balance)}} / </span>
+                    <span class="t-blue">{{format.format(passbook.tp_balance)}}</span>
                   </div>
                 </div>
                 <div class="card-footer text-muted" style="height: 24px;">
@@ -331,7 +335,7 @@
         },
         getAccounts: function() {
           if (!this.showAllAcounts) {
-            axios.get('accounts/frequent/list')
+            axios.get('/accounts?type=frequent')
             .then((response) => {
               this.accounts = response.data;
             });
@@ -347,18 +351,21 @@
             this.transaction.account_id = 0
           }
           if (this.transaction.account_id == 0) {
-            axios.get('activities')
+            axios.get('activities/', { params: { page_size: 15 } })
             .then((response) => {
-              this.activities = response.data;
+              this.activities = response.data.list;
             });
           } else {
-            axios.get('passbooks/accounts/'+this.transaction.account_id)
+            axios.get('activities/', { params: { page_size: 15, account_id: this.transaction.account_id } })
             .then((response) => {
-              this.passbooks = response.data;
+              this.passbooks = response.data.list;
             });
           }
         },
         accountChange:function (tag_id) {
+          if (tag_id == null || tag_id == undefined) {
+            tag_id = 0
+          }
           this.form.tag_id = tag_id
           if ( this.form.to_account_id == this.form.from_account_id) {
             this.form.to_account_id = 0

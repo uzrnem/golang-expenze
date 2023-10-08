@@ -130,15 +130,54 @@
   function drawChart() {
     axios.get('accounts/chart/share')
     .then((response) => {
-      var data = google.visualization.arrayToDataTable(response.data.holding);
+      var ccBills = {'Balance' : 0}
+      var total = 0.0
+      var totalAmount = 0
+      var ccBill = 0
+      var loan = 0.0
+      holding_array = [['Account', 'Amount per Account']]
+      response.data.holding_balance.forEach((item, i) => {
+        if (item['name'] == 'Credit') {
+          ccBill = 0 - parseFloat(item['amount'])
+        } else {
+          holding_array.push([item['name'], parseFloat(item['amount'])])
+          totalAmount += parseFloat(item['amount'])
+        }
+        if (item['name'] == 'Deposit' || item['name'] == 'Stocks Equity' || item['name'] == 'Mutual Funds') {
+    
+        } else if (item['name'] == 'Loan') {
+          loan = parseFloat(item['amount'])
+        } else {
+          total = total + parseFloat(item['amount'])
+        }
+      });
+      cc_array = [['Account', 'Amount per Account']]
+      cc_array.push(['Loan', loan])
+      cc_array.push(['CC Bill', ccBill])
+      cc_array.push(['Balance', total])
+
+      console.log(cc_array)
+      console.log(totalAmount)
+      console.log(holding_array)/*
+
+		var ccBills = {'Balance' : 0}
+		var total = 0.0
+		var ccBill = 0
+		var loan = 0.0
+		console.debug(holding_balance)
+		delete ccBills['CC Bill']
+		console.debug('total: ', total, 'Loan: ', loan, 'cc bill: ', ccBill)
+		cc_array = [['Account', 'Amount per Account']]
+		cc_array.push(['Loan', loan])
+		cc_array.push(['CC Bill', ccBill])
+		cc_array.push(['Balance', total])
+		result(null, { holding: holding_array, balance: account_balance, totalBalance: cc_array });
+	  } finally {
+*/
+      var data = google.visualization.arrayToDataTable(holding_array);
       var formatter = new google.visualization.NumberFormat(
         {negativeColor: 'red', negativeParens: true, pattern: '₹ ##,##,##,###.##'});
       formatter.format(data, 1);
-      
-      totalAmount = 0
-      for (c = 1 ; response.data.holding.length > c; c++) {
-        totalAmount += response.data.holding[c][1]
-      }
 
       var options = {
         title:'My Holdings of '+ format.format(totalAmount), height: 300, pieSliceText: 'percentage', is3D: true,
@@ -158,7 +197,7 @@
       var chart = new google.visualization.PieChart(document.getElementById('piechart'));
       chart.draw(data, options);
 
-      var dataOverall = google.visualization.arrayToDataTable(response.data.totalBalance);
+      var dataOverall = google.visualization.arrayToDataTable(cc_array);
       formatter.format(dataOverall, 1);
       var barchart_options = {
         title: 'Holdings against Bills', is3D: false, height: 300, pieSliceText: 'value-and-percentage',
@@ -181,13 +220,16 @@
       barchart.draw(dataOverall, barchart_options);
 
       var tbody = document.getElementById('tbody');
-      for (let element of response.data.balance) {
+      for (let element of response.data.account_balance) {
         let row = tbody.insertRow();
         for (key in element) {
+          if (key != 'name' && key != 'type' && key != 'amount') {
+            continue;
+          }
           let cell = row.insertCell();
           let span = document.createElement("SPAN");
           //console.debug(key, element[key]);
-          if (key == 'balance') {
+          if (key == 'amount') {
             span.className = 'pull-right';
             if (element[key] > 0) {
               span.className += ' t-blue';

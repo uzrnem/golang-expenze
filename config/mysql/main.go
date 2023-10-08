@@ -17,10 +17,10 @@ var (
 // It does not take any parameters.
 // It returns a *gorm.DB pointer and an error.
 func Load() error {
-	dsn := fmt.Sprintf("%s:%s@tcp(mysqlhost:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		utils.ReadEnvOrDefault("EXP_CONFIG_USER_NAME", "root"),
 		utils.ReadEnvOrDefault("EXP_CONFIG_PASS_NAME", "root"),
-		//utils.ReadEnvOrDefault("EXP_CONFIG_HOST_NAME", "127.0.0.1"),
+		utils.ReadEnvOrDefault("EXP_CONFIG_HOST_NAME", "127.0.0.1"),
 		utils.ReadEnvOrDefault("EXP_CONFIG_PORT_NUMB", "3306"),
 		utils.ReadEnvOrDefault("EXP_CONFIG_DATABASE_NAME", "expense_dev"),
 	)

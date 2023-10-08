@@ -1,23 +1,15 @@
-# Use the official Golang image as the base image
-FROM golang:1.21rc2-alpine3.18
-
-# Set the working directory inside the container
-WORKDIR /app
-
-# Copy the Go module files
+FROM golang:1.21rc2-alpine3.18 AS build
+WORKDIR /temp
 COPY go.mod go.sum ./
-
-# Download and install the Go dependencies
 RUN go mod download
-
-# Copy the rest of the application source code
 COPY . .
+RUN go build -o main ./cmd/app
 
-# Build the Go application
-RUN go build -o main .
-
-# Expose a port for the application to listen on
+FROM alpine:3.18.4 AS release
+WORKDIR /app
+COPY --from=build /temp/main .
+COPY public public
 EXPOSE 8080
+ENTRYPOINT ["/app/main"]
 
-# Set the command to run the executable
-CMD ["./main"]
+# RUN CGO_ENABLED=0 GOOS=linux go build -o /docker-gs-ping

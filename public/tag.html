@@ -142,7 +142,8 @@
               <label for="amount">Parent Tag</label>
               <select id="disabledSelect" class="form-control" v-model="model.tag_id">
                 <option value="" disabled selected>Type</option>
-                <option  v-for="(item, key) in parentTags" :value="key" v-bind:key="key">{{item}}</option>
+                <option  v-for="(item, key) in allTags" :value="item.id" v-bind:key="key"
+                v-if="item.transaction_type_id == model.transaction_type_id">{{item.name}}</option>
               </select>
             </div>
             <div class="form-group col-3">
@@ -171,7 +172,7 @@
           <select class="custom-select" v-model="parentModelKey"
             @click="getSearchTags(parentModelKey)">
             <option value="0">Select Tag...</option>
-            <option  v-for="(item, key) in parentTags" :value="key" v-bind:key="key">{{item}}</option>
+            <option  v-for="(item, key) in allTags" :value="item.id" v-bind:key="key">{{item.name}}</option>
           </select>
           <div class="input-group-append">
             <button class="btn btn-outline-secondary" type="button"
@@ -259,7 +260,7 @@
         model: {},
         tags: [],
         tree: {},
-        parentTags: {},
+        allTags: {},
         parentModelKey: 0,
         transactionTypes: {},
         showCardView: true,
@@ -281,16 +282,15 @@
         getTags: function() {
           axios.get('/tags')
           .then((response) => {
-            var res = response.data;
-            res.forEach((item, index) => {
-              this.parentTags[item.id] = item.name;
-              if (item.tag_id == null) {
+            this.allTags = response.data;
+            this.allTags.forEach((item, index) => {
+              if (item.tag_id == 0) {
                 this.tree["id_" +item.id] = item
                 this.tree["id_" +item.id].childs = []
               }
             })
-            res.forEach((item, index) => {
-              if (item.tag_id != null) {
+            this.allTags.forEach((item, index) => {
+              if (item.tag_id != 0) {
                 this.tree["id_" +item.tag_id].childs.push(item)
               }
             })

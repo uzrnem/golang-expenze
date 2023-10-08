@@ -1,8 +1,59 @@
-version: '3'
+#docker-compose -f docker-compose-full.yml up -d
+version: '3.7'
+
 services:
-  app:
+  mysqldb:
+    image: mysql:8.0.29-oracle
+    container_name: mysql
+    restart: always #restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: expense_dev
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    networks:
+      - mysql-database
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:5.1.1
+    container_name: mysqladmin
+    links:
+      - mysqldb
+    environment:
+      PMA_HOST: mysqldb
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - 8000:80
+    networks:
+      - mysql-database
+
+  expense1:
+    depends_on:
+      - mysqldb
+    image: uzrnem/expenze:0.5
+    environment:
+      EXP_CONFIG_DATABASE_NAME: expense_dev
+      EXP_CONFIG_USER_NAME: root
+      EXP_CONFIG_PASS_NAME: root
+      EXP_CONFIG_HOST_NAME: mysqldb
+      EXP_CONFIG_PORT_NUMB: 3306
+    ports:
+      - 9001:9001
+    networks:
+      - mysql-database
+    profiles:
+      - advance
+
+  expense:
+    depends_on:
+      - mysqldb
     image: golang:1.21rc2-alpine3.18
     working_dir: /app
+    container_name: expense
     environment:
       EXP_CONFIG_DATABASE_NAME: expense_dev
       EXP_CONFIG_USER_NAME: root
@@ -15,8 +66,8 @@ services:
     ports:
       - 9001:9001
     networks:
-      - docker-compose-files_mysql
+      - mysql-database
 
 networks:
-  docker-compose-files_mysql:
-    external: true
+  mysql-database:
+    driver: bridge
