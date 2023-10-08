@@ -154,24 +154,6 @@
       cc_array.push(['CC Bill', ccBill])
       cc_array.push(['Balance', total])
 
-      console.log(cc_array)
-      console.log(totalAmount)
-      console.log(holding_array)/*
-
-		var ccBills = {'Balance' : 0}
-		var total = 0.0
-		var ccBill = 0
-		var loan = 0.0
-		console.debug(holding_balance)
-		delete ccBills['CC Bill']
-		console.debug('total: ', total, 'Loan: ', loan, 'cc bill: ', ccBill)
-		cc_array = [['Account', 'Amount per Account']]
-		cc_array.push(['Loan', loan])
-		cc_array.push(['CC Bill', ccBill])
-		cc_array.push(['Balance', total])
-		result(null, { holding: holding_array, balance: account_balance, totalBalance: cc_array });
-	  } finally {
-*/
       var data = google.visualization.arrayToDataTable(holding_array);
       var formatter = new google.visualization.NumberFormat(
         {negativeColor: 'red', negativeParens: true, pattern: '₹ ##,##,##,###.##'});
@@ -220,28 +202,32 @@
       var tbody = document.getElementById('tbody');
       for (let element of response.data.account_balance) {
         let row = tbody.insertRow();
+        let nameSpan = document.createElement("SPAN");
+        let typeSpan = document.createElement("SPAN");
+        let amountSpan = document.createElement("SPAN");
         for (key in element) {
-          if (key != 'name' && key != 'type' && key != 'amount') {
-            continue;
+          if (key == 'name') {
+            let text = document.createTextNode(element[key]);
+            nameSpan.appendChild(text);
           }
-          let cell = row.insertCell();
-          let span = document.createElement("SPAN");
-          //console.debug(key, element[key]);
           if (key == 'amount') {
-            span.className = 'pull-right';
+            amountSpan.className = 'pull-right';
             if (element[key] > 0) {
-              span.className += ' t-blue';
+              amountSpan.className += ' t-blue';
             } else {
-              span.className += ' t-red';
+              amountSpan.className += ' t-red';
             }
             let text = document.createTextNode(format.format(element[key]));
-            span.appendChild(text);
-          } else {
-            let text = document.createTextNode(element[key]);
-            span.appendChild(text);
+            amountSpan.appendChild(text);
           }
-          cell.appendChild(span);
+          if (key == 'type') {
+            let text = document.createTextNode(element[key]);
+            typeSpan.appendChild(text);
+          }
         }
+        row.insertCell().appendChild(nameSpan);
+        row.insertCell().appendChild(typeSpan);
+        row.insertCell().appendChild(amountSpan);
       }
     });
   }
