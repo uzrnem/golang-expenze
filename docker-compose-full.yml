@@ -34,7 +34,7 @@ services:
   go-expense:
     depends_on:
       - mysqldb
-    image: uzrnem/expenze:0.2.1
+    image: uzrnem/expense:0.2.1
     container_name: goexpense
     environment:
       EXP_CONFIG_DATABASE_NAME: expense_dev
