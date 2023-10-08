@@ -25,12 +25,12 @@ func Load() error {
 //
 // It takes in a `c` of type `echo.Context` and `modal` of type `any` as parameters.
 // It returns a value of type `any` and an `error`.
-func (r *RepoStrct) Create(c echo.Context, modal any) (any, error) {
+func (r *RepoStrct) Create(c echo.Context, modal any) error {
 	err := r.MysqlDB.Create(modal).Error
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return modal, nil
+	return nil
 }
 
 func (r *RepoStrct) Delete(c echo.Context, modal any, id int) error {
@@ -49,12 +49,12 @@ func (r *RepoStrct) Get(c echo.Context, modal any) (any, error) {
 	return modal, nil
 }
 
-func (r *RepoStrct) Update(c echo.Context, modal any) (any, error) {
+func (r *RepoStrct) Update(c echo.Context, modal any) error {
 	err := r.MysqlDB.Save(modal).Error
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return modal, nil
+	return nil
 }
 
 func (r *RepoStrct) List(c echo.Context, modal any) (any, error) {

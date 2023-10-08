@@ -25,17 +25,26 @@ func TagLoad() error {
 	return nil
 }
 
-func (t *TagController) Create(c echo.Context) error {
-	modal := models.Tag{}
-	if errs := t.validator.Validate(modal); errs != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errs)
-	}
+type FullTag struct {
+	ID                uint   `json:"id"`
+	Name              string `json:"name"`
+	TagID             uint   `json:"tag_id"`
+	Parent            string `json:"parent"`
+	TransactionTypeId uint   `json:"transaction_type_id"`
+	Type              string `json:"type"`
+	TagCount          uint   `json:"tag_count"`
+}
 
-	res, err := t.repo.Create(c, modal)
+func (t *TagController) Create(c echo.Context) error {
+	modal := &models.Tag{}
+	if err := c.Bind(modal); err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	err := t.repo.Create(c, modal)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusCreated, res)
+	return c.JSON(http.StatusCreated, modal)
 }
 
 func (t *TagController) Delete(c echo.Context) error {
@@ -72,21 +81,11 @@ func (t *TagController) Update(c echo.Context) error {
 		return err
 	}
 	modl.ID = uint(id)
-	res, err := t.repo.Update(c, modl)
+	err = t.repo.Update(c, modl)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusOK, res)
-}
-
-type FullTag struct {
-	ID                uint   `json:"id"`
-	Name              string `json:"name"`
-	TagID             uint   `json:"tag_id"`
-	Parent            string `json:"parent"`
-	TransactionTypeId uint   `json:"transaction_type_id"`
-	Type              string `json:"type"`
-	TagCount          uint   `json:"tag_count"`
+	return c.JSON(http.StatusOK, modl)
 }
 
 func (t *TagController) List(c echo.Context) error {

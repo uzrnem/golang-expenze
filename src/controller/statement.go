@@ -24,17 +24,21 @@ func StatementLoad() error {
 	return nil
 }
 
-func (t *StatementController) Create(c echo.Context) error {
-	modal := models.Statement{}
-	if errs := t.validator.Validate(modal); errs != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errs)
-	}
+type FullStatement struct {
+	models.Statement
+	Name string `json:"name" gorm:"column:name"`
+}
 
-	res, err := t.repo.Create(c, modal)
+func (t *StatementController) Create(c echo.Context) error {
+	modal := &models.Statement{}
+	if err := c.Bind(modal); err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	err := t.repo.Create(c, modal)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusCreated, res)
+	return c.JSON(http.StatusCreated, modal)
 }
 
 func (t *StatementController) Delete(c echo.Context) error {
@@ -71,18 +75,22 @@ func (t *StatementController) Update(c echo.Context) error {
 		return err
 	}
 	modl.ID = uint(id)
-	res, err := t.repo.Update(c, modl)
+	err = t.repo.Update(c, modl)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, modl)
 }
 
 func (t *StatementController) List(c echo.Context) error {
-	list := &[]models.Statement{}
-	res, err := t.repo.List(c, list)
+	list := &[]FullStatement{}
+	table := "statements s"
+	silect := `s.id, s.account_id, acc.name, s.amount, DATE_FORMAT(s.event_date, "%Y-%m-%d") as event_date, s.remarks`
+	orderBy := "s.event_date desc"
+	join := "LEFT JOIN accounts acc on s.account_id = acc.id"
+	err := t.repo.FetchWithFullQuery(c, list, table, silect, join, "", "", orderBy, 100, 0)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, list)
 }

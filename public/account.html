@@ -209,7 +209,7 @@
       },
       methods: {
         save: function() {
-          if (this.editId) {
+          if (this.editId != null) {
             axios.put('/accounts/'+this.editId, this.model )
             .then((response) => { this.clear(); });
           } else {

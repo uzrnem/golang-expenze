@@ -25,17 +25,28 @@ func PassbookLoad() error {
 	return nil
 }
 
-func (t *PassbookController) Create(c echo.Context) error {
-	modal := models.Passbook{}
-	if errs := t.validator.Validate(modal); errs != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errs)
-	}
+type FullPassbook struct {
+	models.Passbook
+	CurrentAccount  string  `json:"current_account"`
+	TransactionType string  `json:"transaction_type"`
+	Comment         string  `json:"comment"`
+	TagName         string  `json:"tag_name"`
+	Amount          float64 `json:"amount,string"`
+	EventDate       string  `json:"event_date"`
+	OppositeAccount string  `json:"opposite_account"`
+	Remarks         string  `json:"remarks"`
+}
 
-	res, err := t.repo.Create(c, modal)
+func (t *PassbookController) Create(c echo.Context) error {
+	modal := &models.Passbook{}
+	if err := c.Bind(modal); err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	err := t.repo.Create(c, modal)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusCreated, res)
+	return c.JSON(http.StatusCreated, modal)
 }
 
 func (t *PassbookController) Delete(c echo.Context) error {
@@ -48,18 +59,6 @@ func (t *PassbookController) Delete(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return c.JSON(http.StatusOK, "Deleted")
-}
-
-type FullPassbook struct {
-	models.Passbook
-	CurrentAccount  string  `json:"current_account"`
-	TransactionType string  `json:"transaction_type"`
-	Comment         string  `json:"comment"`
-	TagName         string  `json:"tag_name"`
-	Amount          float64 `json:"amount,string"`
-	EventDate       string  `json:"event_date"`
-	OppositeAccount string  `json:"opposite_account"`
-	Remarks         string  `json:"remarks"`
 }
 
 func (t *PassbookController) Get(c echo.Context) error {
@@ -97,11 +96,11 @@ func (t *PassbookController) Update(c echo.Context) error {
 		return err
 	}
 	modl.ID = uint(id)
-	res, err := t.repo.Update(c, modl)
+	err = t.repo.Update(c, modl)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, modl)
 }
 
 func (t *PassbookController) List(c echo.Context) error {

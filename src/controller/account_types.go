@@ -31,15 +31,14 @@ type FullAccountType struct {
 
 func (t *AccountTypeController) Create(c echo.Context) error {
 	modal := models.AccountType{}
-	if errs := t.validator.Validate(modal); errs != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errs)
+	if err := c.Bind(modal); err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
 	}
-
-	res, err := t.repo.Create(c, modal)
+	err := t.repo.Create(c, modal)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusCreated, res)
+	return c.JSON(http.StatusCreated, modal)
 }
 
 func (t *AccountTypeController) Delete(c echo.Context) error {
@@ -76,11 +75,11 @@ func (t *AccountTypeController) Update(c echo.Context) error {
 		return err
 	}
 	modl.ID = uint(id)
-	res, err := t.repo.Update(c, modl)
+	err = t.repo.Update(c, modl)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, modl)
 }
 
 func (t *AccountTypeController) List(c echo.Context) error {

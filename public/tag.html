@@ -135,7 +135,7 @@
               <label for="amount">Transaction Types</label>
               <select id="disabledSelect" class="form-control" v-model="model.transaction_type_id">
                 <option value="" disabled selected>Type</option>
-                <option  v-for="(item, key) in transactionTypes" :value="key" v-bind:key="key">{{item}}</option>
+                <option  v-for="(item, key) in transactionTypes" :value="item.id" v-bind:key="key">{{item.name}}</option>
               </select>
             </div>
             <div class="form-group col-3">
@@ -231,7 +231,7 @@
               <td><span class="pull-right">{{tag.id}}</span></td>
               <td><a class="t-orange" @click="parentModelKey=tag.id; getSearchTags(parentModelKey)" style="cursor: pointer;"
                 >{{tag.name}}</a></td>
-              <td><span class="t-orange">{{transactionTypes[tag.transaction_type_id]}}</span></td>
+              <td><span class="t-orange">{{transactionTypeStatic[tag.transaction_type_id]}}</span></td>
               <td><a class="t-orange" @click="parentModelKey=(tag.tag_id || 0); getSearchTags(parentModelKey)" style="cursor: pointer;"
                 >{{tag.parent || '---'}}</a></td>
               <td>
@@ -263,6 +263,11 @@
         allTags: {},
         parentModelKey: 0,
         transactionTypes: {},
+        transactionTypeStatic: {
+          2: "Expense",
+          3: "Income",
+          1: "Transfer",
+        },
         showCardView: true,
       },
       created() {
@@ -270,12 +275,11 @@
       },
       methods: {
         save: function(clearOnlyTagName) {
-          if (this.editId) {
+          if (this.editId != null) {
             axios.put('/tags/'+this.editId, this.model )
             .then((response) => { this.clear(clearOnlyTagName); });
           } else {
-            console.debug(this.model)
-            axios.post('/tags', this.model )
+            axios.post('/tags/', this.model )
             .then((response) => { this.clear(clearOnlyTagName); });
           }
         },
@@ -301,11 +305,7 @@
         getTransactionTypes: function() {
           axios.get('/transaction_types')
           .then((response) => {
-            var res = response.data;
-            for (const item in res) {
-              this.transactionTypes[res[item].id] = res[item].name;
-            }
-            console.debug(this.transactionTypes);
+            this.transactionTypes = response.data;
           });
         },
         getSearchTags: function(key) {

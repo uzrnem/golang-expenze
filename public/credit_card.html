@@ -158,7 +158,7 @@
             <tr v-for="st in statements">
               <td></td>
               <td><a class="t-orange" style="cursor: pointer;"
-                >{{accountMap[st.account_id] || '---'}}</a></td>
+                >{{st.name}}</a></td>
               <td class="pull-right r-red ">{{format.format(st.amount)}}</td>
               <td>
                 <span class="ml-auto t-high-blue">{{st.event_date}}</span>

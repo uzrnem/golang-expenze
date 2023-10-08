@@ -10,8 +10,8 @@ import (
 
 func SetupMiddlerware(e *echo.Echo) {
 	e.Pre(middleware.RemoveTrailingSlash())
-	e.Use(Counter())
-	e.Use(middleware.Logger())
+	//e.Use(Counter())
+	//e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -23,7 +23,7 @@ func SetupRoutes(e *echo.Echo, path string, handlers controller.Controller) {
 	e.POST(path, handlers.Create)
 	e.DELETE(path+"/:id", handlers.Delete)
 	e.GET(path+"/:id", handlers.Get)
-	e.POST(path+"/:id", handlers.Update)
+	e.PUT(path+"/:id", handlers.Update)
 	e.GET(path, handlers.List)
 }
 
@@ -44,13 +44,4 @@ func Counter() echo.MiddlewareFunc {
 			return nil
 		}
 	}
-}/*
-Counter: map[
-	GET:map[
-		/account_types:1 
-		/accounts:2 
-		/passbooks:1 
-		/tags:2 
-		/transaction_types:1 
-	]
-]*/
+}

@@ -45,11 +45,11 @@ func (t *ActivityController) Create(c echo.Context) error {
 	if err := c.Bind(modal); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	res, err := t.repo.Create(c, modal)
+	err := t.repo.Create(c, modal)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusCreated, res)
+	return c.JSON(http.StatusCreated, modal)
 }
 
 func (t *ActivityController) Delete(c echo.Context) error {
@@ -86,11 +86,11 @@ func (t *ActivityController) Update(c echo.Context) error {
 		return err
 	}
 	modl.ID = uint(id)
-	res, err := t.repo.Update(c, modl)
+	err = t.repo.Update(c, modl)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, modl)
 }
 
 func (t *ActivityController) List(c echo.Context) error {
