@@ -224,7 +224,6 @@
         format: new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
       },
       created() {
-          console.debug('Component has been created!');
       },
       methods: {
         updateAmount: function(event) {
@@ -237,7 +236,6 @@
             axios.put('/statements/'+this.editId, this.model )
             .then((response) => { this.clear(); });
           } else {
-            console.debug(this.model)
             axios.post('/statements', this.model )
             .then((response) => { this.clear(); });
           }
@@ -246,7 +244,6 @@
           axios.get('/statements')
           .then((response) => {
             this.statements = response.data;
-            console.debug(this.statements);
           });
         },
         getCardNameAndExpense: function(item) {
@@ -260,7 +257,6 @@
             for (const item in res) {
               this.accountMap[res[item].id] = res[item].name;
             }
-            console.debug(this.accountMap)
             this.accounts = res;
           });
         },
@@ -284,7 +280,6 @@
         }
       },
       mounted() {
-        console.debug('Component has been Mounted!');
         this.clear();
         this.getAccounts();
       },
