@@ -203,7 +203,6 @@
         format: new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
       },
       created() {
-          console.debug('Component has been created!');
       },
       methods: {
         save: function() {
@@ -242,7 +241,6 @@
         }
       },
       mounted() {
-        console.debug('Component has been Mounted!');
         this.getAccountTypes();
         this.getAccounts();
       }
