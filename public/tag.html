@@ -269,7 +269,6 @@
         showCardView: true,
       },
       created() {
-          console.debug('Component has been created!');
       },
       methods: {
         save: function(clearOnlyTagName) {
@@ -297,7 +296,6 @@
               }
             })
             this.tags = response.data;
-            console.debug(JSON.stringify(this.tree));
           });
         },
         getTransactionTypes: function() {
@@ -310,7 +308,6 @@
           axios.get('/tags?parentTag='+key)
           .then((response) => {
             this.tags = response.data;
-            console.debug(this.tags);
           });
         },
         editRecord: function(item) {
@@ -340,7 +337,6 @@
         }
       },
       mounted() {
-        console.debug('Component has been Mounted!');
         this.getTransactionTypes();
         this.getTags();
       }
