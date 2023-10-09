@@ -296,7 +296,6 @@
         format: new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
       },
       created() {
-          console.debug('Component has been created!');
       },
       methods: {
         processForm: function() {
@@ -313,7 +312,6 @@
             }
             this.reloadAll();
           });
-          console.debug(this.form);
         },
         processHalfForm: function() {
           axios.post('activities', this.form)
@@ -329,7 +327,6 @@
             }
             this.reloadAll();
           });
-          console.debug(this.form);
         },
         getAccounts: function() {
           if (!this.showAllAcounts) {
@@ -371,27 +368,22 @@
           axios.get('tags/transactions/hits?from_account_id='+ this.form.from_account_id + 
             '&to_account_id=' +this.form.to_account_id+'&tag_id='+this.form.tag_id)
           .then((response) => {
-            console.debug(349, response)
             this.tags = response.data.tags;
-            console.debug(349, this.tags)
             this.sub_tags = response.data.sub_tags;
             this.form.tag_id = response.data.tag_id;
             this.form.sub_tag_id = response.data.sub_tag_id;
             if ( response.data.remarks && response.data.remarks.length > 0 ) {
               this.form.remarks_options = response.data.remarks.split(',');
-              console.log(377, response.data.remarks.length, this.form.remarks_options)
             }
           });
         },
         reloadAll() {
-            this.getAccounts();
-            this.accountChangeTransaction();
-            console.debug('Reloaded..!');
+          this.getAccounts();
+          this.accountChangeTransaction();
         }
       },
       mounted() {
-          console.debug('Component has been Mounted!');
-          this.reloadAll();
+        this.reloadAll();
       }
     });
   </script>
