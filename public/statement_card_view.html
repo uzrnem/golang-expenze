@@ -223,7 +223,6 @@
         format: new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
       },
       created() {
-          console.debug('Component has been created!');
       },
       methods: {
         updateAmount: function(event) {
@@ -248,13 +247,11 @@
               this.mainCard.expense += item.expense
               this.mainCard.salary += item.salary
               this.mainCard.income += item.income
-              console.log(item)
               var bills = {}
               var originExp = 0
               if (item.bill != null) {
                 //Statement amount
                 var cards = item.credit.split(',');
-                console.debug("cards: ", cards)
                 cards.forEach((card, cardI) => {
                   if (card == "") {return}
                   var [cName, cStatement, cRemarks] = this.getCardNameAndExpense(card);
@@ -326,7 +323,6 @@
             for (const item in res) {
               this.accountMap[res[item].id] = res[item].name;
             }
-            console.debug(this.accountMap)
             this.accounts = res;
           });
         },
@@ -342,7 +338,6 @@
         }
       },
       mounted() {
-        console.debug('Component has been Mounted!');
         this.clear();
         this.getAccounts();
       },
