@@ -425,7 +425,6 @@
         }
       },
       created() {
-          console.debug('Component has been created!');
       },
       methods: {
         getTags: function() {
@@ -468,7 +467,6 @@
             remarks: passbook.remarks || null,
             openDelete: false
           }
-          console.debug(this.editModel)
           this.isSearchFormOpen = false
           this.isEditFormOpen = true
         },
@@ -495,7 +493,6 @@
         },
         openDeleteRecord: function() {
           this.editModel.openDelete = true;
-          console.debug(this.editModel)
         },
         cancelDeleteRecord: function() {
           this.editModel.openDelete = false;
@@ -533,14 +530,12 @@
             page_index: 1,
             page_size: 10
           };
-          console.debug('Reloaded..!');
         }
       },
       mounted() {
-          console.debug('Component has been Mounted!');
-          this.getTags();
-          this.getAccounts();
-          this.getActivities();
+        this.getTags();
+        this.getAccounts();
+        this.getActivities();
       }
     });
   </script>
