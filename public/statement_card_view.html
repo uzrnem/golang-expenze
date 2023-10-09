@@ -150,7 +150,7 @@
           <div class="card-header p-1">{{st.mon}} {{st.year}}</div>
           <div class="card-body p-0">
             <ul class="list-group list-group-flush">
-              <li class="list-group-item p-1" v-if="st.bill">
+              <li class="list-group-item p-1">
                 <amount-statement name="Credit Card: " :percentage="st.billPercent"
                   original-color="t-blue" :original="st.originExp"
                   statement-color="t-red" :statement="st.bill" ></amount-statement>
@@ -198,7 +198,8 @@
         statement: { type: [Number, String]},
         remark: { type: String},
         originalColor: { type: String },
-        statementColor: { type: String }
+        statementColor: { type: String },
+        percentage: { type: Number }
       },
       template: '<div>{{name}} <span class="t-orange" v-if="percentage" style="font-size: small;">({{percentage}} %)</span>'+
         '<span class="pull-right" :class="originalColor" v-if="original" :title="format.format(statement)">{{format.format(original)}}</span>' +
@@ -255,7 +256,10 @@
                 var cards = item.credit.split(',');
                 console.debug("cards: ", cards)
                 cards.forEach((card, cardI) => {
+                  if (card == "") {return}
                   var [cName, cStatement, cRemarks] = this.getCardNameAndExpense(card);
+                  if (cName == "") {return}
+                  if (cStatement == 0) {return}
                   bills[cName] = {
                     statement: cStatement,
                     remarks: cRemarks,
