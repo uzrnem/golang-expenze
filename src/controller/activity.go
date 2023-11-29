@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"encoding/json"
 
 	"github.com/labstack/echo"
 )
@@ -27,19 +28,6 @@ func ActivityLoad() error {
 	return nil
 }
 
-type FullActivity struct {
-	models.Activity
-	FromAccount       string  `json:"from_account"`
-	ToAccount         string  `json:"to_account"`
-	Tag               string  `json:"tag"`
-	SubTag            string  `json:"sub_tag"`
-	TransactionType   string  `json:"transaction_type"`
-	FpPreviousBalance float64 `json:"fp_previous_balance" gorm:"column:fp_previous_balance"`
-	FpBalance         float64 `json:"fp_balance" gorm:"column:fp_balance"`
-	TpPreviousBalance float64 `json:"tp_previous_balance" gorm:"column:tp_previous_balance"`
-	TpBalance         float64 `json:"tp_balance" gorm:"column:tp_balance"`
-}
-
 func (t *ActivityController) Create(c echo.Context) error {
 	modal := &models.Activity{}
 	if err := c.Bind(modal); err != nil {
@@ -49,7 +37,9 @@ func (t *ActivityController) Create(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusCreated, modal)
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+	c.Response().WriteHeader(http.StatusCreated)
+	return json.NewEncoder(c.Response()).Encode(modal)
 }
 
 func (t *ActivityController) Delete(c echo.Context) error {
@@ -133,7 +123,7 @@ func (t *ActivityController) List(c echo.Context) error {
 		conditions = append(conditions, condTag)
 	}
 
-	list := &[]FullActivity{}
+	list := &[]models.FullActivity{}
 	where := strings.Join(conditions[:], " AND ")
 	limit := utils.StringToInt(pageSize)
 	offset := (utils.StringToInt(pageIndex) - 1) * limit

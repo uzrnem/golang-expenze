@@ -233,7 +233,7 @@
         },
         save: function() {
           if (this.editId) {
-            axios.put('/statements/'+this.editId, this.model )
+            axios.post('/statements/'+this.editId, this.model )
             .then((response) => { this.clear(); });
           } else {
             axios.post('/statements', this.model )

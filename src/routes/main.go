@@ -23,7 +23,7 @@ func SetupRoutes(e *echo.Echo, path string, handlers controller.Controller) {
 	e.POST(path, handlers.Create)
 	e.DELETE(path+"/:id", handlers.Delete)
 	e.GET(path+"/:id", handlers.Get)
-	e.PUT(path+"/:id", handlers.Update)
+	e.POST(path+"/:id", handlers.Update)
 	e.GET(path, handlers.List)
 }
 

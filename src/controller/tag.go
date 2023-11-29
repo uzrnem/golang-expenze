@@ -7,6 +7,7 @@ import (
 	"expensez/src/repository"
 	"net/http"
 	"strconv"
+	"encoding/json"
 
 	"github.com/labstack/echo"
 )
@@ -25,16 +26,6 @@ func TagLoad() error {
 	return nil
 }
 
-type FullTag struct {
-	ID                uint   `json:"id"`
-	Name              string `json:"name"`
-	TagID             uint   `json:"tag_id"`
-	Parent            string `json:"parent"`
-	TransactionTypeId uint   `json:"transaction_type_id"`
-	Type              string `json:"type"`
-	TagCount          uint   `json:"tag_count"`
-}
-
 func (t *TagController) Create(c echo.Context) error {
 	modal := &models.Tag{}
 	if err := c.Bind(modal); err != nil {
@@ -44,7 +35,9 @@ func (t *TagController) Create(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusCreated, modal)
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+	c.Response().WriteHeader(http.StatusCreated)
+	return json.NewEncoder(c.Response()).Encode(modal)
 }
 
 func (t *TagController) Delete(c echo.Context) error {
@@ -90,7 +83,7 @@ func (t *TagController) Update(c echo.Context) error {
 
 func (t *TagController) List(c echo.Context) error {
 	parentTag := c.QueryParam("parentTag")
-	list := &[]FullTag{}
+	list := &[]models.FullTag{}
 	where := ""
 	if utils.IsValueNonZero(parentTag) {
 		where = parentTag + " IN (t.id, t.tag_id)"

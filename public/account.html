@@ -205,12 +205,25 @@
       created() {
       },
       methods: {
+        getModel: function(modal) {
+          var obj = {
+            name: modal.name,
+            amount: modal.amount,
+            is_frequent: modal.is_frequent,
+            is_snapshot_disable: modal.is_snapshot_disable,
+            is_closed: modal.is_closed,
+          }
+          if (modal.account_type_id) {
+            obj.account_type_id = parseInt(modal.account_type_id);
+          }
+          return obj;
+        },
         save: function() {
           if (this.editId != null) {
-            axios.put('/accounts/'+this.editId, this.model )
+            axios.post('/accounts/'+this.editId, this.getModel(this.model) )
             .then((response) => { this.clear(); });
           } else {
-            axios.post('/accounts', this.model )
+            axios.post('/accounts', this.getModel(this.model) )
             .then((response) => { this.clear(); });
           }
         },

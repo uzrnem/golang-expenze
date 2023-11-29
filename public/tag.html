@@ -273,7 +273,7 @@
       methods: {
         save: function(clearOnlyTagName) {
           if (this.editId != null) {
-            axios.put('/tags/'+this.editId, this.model )
+            axios.post('/tags/'+this.editId, this.model )
             .then((response) => { this.clear(clearOnlyTagName); });
           } else {
             axios.post('/tags/', this.model )

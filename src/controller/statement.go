@@ -6,6 +6,7 @@ import (
 	"expensez/src/repository"
 	"net/http"
 	"strconv"
+	"encoding/json"
 
 	"github.com/labstack/echo"
 )
@@ -24,11 +25,6 @@ func StatementLoad() error {
 	return nil
 }
 
-type FullStatement struct {
-	models.Statement
-	Name string `json:"name" gorm:"column:name"`
-}
-
 func (t *StatementController) Create(c echo.Context) error {
 	modal := &models.Statement{}
 	if err := c.Bind(modal); err != nil {
@@ -38,7 +34,9 @@ func (t *StatementController) Create(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusCreated, modal)
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+	c.Response().WriteHeader(http.StatusCreated)
+	return json.NewEncoder(c.Response()).Encode(modal)
 }
 
 func (t *StatementController) Delete(c echo.Context) error {
@@ -83,7 +81,7 @@ func (t *StatementController) Update(c echo.Context) error {
 }
 
 func (t *StatementController) List(c echo.Context) error {
-	list := &[]FullStatement{}
+	list := &[]models.FullStatement{}
 	table := "statements s"
 	silect := `s.id, s.account_id, acc.name, s.amount, DATE_FORMAT(s.event_date, "%Y-%m-%d") as event_date, s.remarks`
 	orderBy := "s.event_date desc"

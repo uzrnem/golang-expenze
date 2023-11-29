@@ -1,5 +1,5 @@
-# docker build . -t uzrnem/expense:0.2.1 --no-cache
-FROM golang:1.21rc2-alpine3.18 AS build
+# docker build . -t uzrnem/expense:0.2.3 --no-cache
+FROM golang:1.21.2-alpine3.18 AS build
 WORKDIR /temp
 COPY go.mod go.sum ./
 RUN go mod download

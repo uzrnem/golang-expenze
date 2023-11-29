@@ -6,6 +6,7 @@ import (
 	"expensez/src/repository"
 	"net/http"
 	"strconv"
+	"encoding/json"
 
 	"github.com/labstack/echo"
 )
@@ -33,7 +34,9 @@ func (t *TransactionTypeController) Create(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusCreated, modal)
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+	c.Response().WriteHeader(http.StatusCreated)
+	return json.NewEncoder(c.Response()).Encode(modal)
 }
 
 func (t *TransactionTypeController) Delete(c echo.Context) error {

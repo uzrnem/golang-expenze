@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"encoding/json"
 
 	"github.com/labstack/echo"
 )
@@ -25,18 +26,6 @@ func PassbookLoad() error {
 	return nil
 }
 
-type FullPassbook struct {
-	models.Passbook
-	CurrentAccount  string  `json:"current_account"`
-	TransactionType string  `json:"transaction_type"`
-	Comment         string  `json:"comment"`
-	TagName         string  `json:"tag_name"`
-	Amount          float64 `json:"amount,string"`
-	EventDate       string  `json:"event_date"`
-	OppositeAccount string  `json:"opposite_account"`
-	Remarks         string  `json:"remarks"`
-}
-
 func (t *PassbookController) Create(c echo.Context) error {
 	modal := &models.Passbook{}
 	if err := c.Bind(modal); err != nil {
@@ -46,7 +35,9 @@ func (t *PassbookController) Create(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusCreated, modal)
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+	c.Response().WriteHeader(http.StatusCreated)
+	return json.NewEncoder(c.Response()).Encode(modal)
 }
 
 func (t *PassbookController) Delete(c echo.Context) error {
@@ -62,7 +53,7 @@ func (t *PassbookController) Delete(c echo.Context) error {
 }
 
 func (t *PassbookController) Get(c echo.Context) error {
-	list := &[]FullPassbook{}
+	list := &[]models.FullPassbook{}
 	table := "passbooks p"
 	silect := `ct.name as current_account, p.previous_balance, p.balance, tt.name as transaction_type, 
 		CASE 

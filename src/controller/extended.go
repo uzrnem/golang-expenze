@@ -123,7 +123,7 @@ func (t *ExtController) GetTagsByTranscationHits(c echo.Context) error {
 }
 
 func (t *ExtController) BalanceSheet(c echo.Context) error {
-	actTypeRes := &[]FullAccountType{}
+	actTypeRes := &[]models.FullAccountType{}
 	table := "accounts a"
 	silect := "t.name as name, SUM(a.amount) as amount "
 	joins := "LEFT JOIN account_types t on a.account_type_id = t.id"
@@ -135,7 +135,7 @@ func (t *ExtController) BalanceSheet(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	actRes := &[]FullAccount{}
+	actRes := &[]models.FullAccount{}
 	silect = "a.name as name, t.name as type, a.amount as amount"
 	orderBy := `t.name='Saving' desc, t.name='Credit' desc, t.name='Wallet' desc,
 	t.name='Deposit' desc, t.name='Loan' desc, t.name='Stocks Equity', a.name`
@@ -237,7 +237,7 @@ func (t *ExtController) ExpenseSheet(c echo.Context) error {
 	if utils.IsValueNonZero(month) {
 		monthCond = fmt.Sprintf(" AND EXTRACT(YEAR_MONTH FROM event_date) = %s ", month)
 	}
-	holdings := &[]FullAccountType{}
+	holdings := &[]models.FullAccountType{}
 	table := "activities as act"
 	silect := "COALESCE(sub.name, tag.name) as name, SUM(act.amount) as amount"
 	joins := `LEFT JOIN tags tag ON tag.id = act.tag_id
@@ -261,7 +261,7 @@ func (t *ExtController) ExpenseSheet(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	expenseByAccount := &[]FullStatement{}
+	expenseByAccount := &[]models.FullStatement{}
 	table = "activities as act"
 	silect = "a.name, SUM(act.amount) as amount"
 	joins = "LEFT JOIN accounts a ON act.from_account_id = a.id"

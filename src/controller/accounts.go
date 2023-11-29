@@ -6,6 +6,7 @@ import (
 	"expensez/src/repository"
 	"net/http"
 	"strconv"
+	"encoding/json"
 
 	"github.com/labstack/echo"
 )
@@ -24,21 +25,18 @@ func AccountLoad() error {
 	return nil
 }
 
-type FullAccount struct {
-	models.Account
-	Type string   `json:"type" gorm:"column:type"`
-}
-
 func (t *AccountController) Create(c echo.Context) error {
 	modal := &models.Account{}
 	if err := c.Bind(modal); err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	err := t.repo.Create(c, modal)
 	if err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusCreated, modal)
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+	c.Response().WriteHeader(http.StatusCreated)
+	return json.NewEncoder(c.Response()).Encode(modal)
 }
 
 func (t *AccountController) Delete(c echo.Context) error {
