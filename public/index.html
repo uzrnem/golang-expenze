@@ -299,6 +299,8 @@
       },
       methods: {
         processForm: function() {
+          this.form.from_account_id = parseInt(this.form.from_account_id);
+          this.form.to_account_id = parseInt(this.form.to_account_id);
           axios.post('activities', this.form)
           .then((response) => {
             this.form = {
@@ -314,6 +316,8 @@
           });
         },
         processHalfForm: function() {
+          this.form.from_account_id = parseInt(this.form.from_account_id);
+          this.form.to_account_id = parseInt(this.form.to_account_id);
           axios.post('activities', this.form)
           .then((response) => {
             this.form = {

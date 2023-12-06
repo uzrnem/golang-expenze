@@ -483,6 +483,8 @@
           this.isEditFormOpen = false
         },
         editRecordConfirm: function() {
+          this.editModel.to_account_id = parseInt(this.editModel.to_account_id);
+          this.editModel.from_account_id = parseInt(this.editModel.from_account_id);
           axios.post('activities/'+this.editModel.id, this.editModel)
           .then((response) => {
             document.getElementById('item_' + this.editModel.id).scrollIntoView();

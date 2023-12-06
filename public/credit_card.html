@@ -232,6 +232,7 @@
           this.model.amount = 0 - amount
         },
         save: function() {
+          this.model.account_id = parseInt(this.model.account_id);
           if (this.editId) {
             axios.post('/statements/'+this.editId, this.model )
             .then((response) => { this.clear(); });

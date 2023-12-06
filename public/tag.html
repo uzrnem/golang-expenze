@@ -272,6 +272,8 @@
       },
       methods: {
         save: function(clearOnlyTagName) {
+          this.model.transaction_type_id = parseInt(this.model.transaction_type_id);
+          this.model.tag_id = parseInt(this.model.tag_id);
           if (this.editId != null) {
             axios.post('/tags/'+this.editId, this.model )
             .then((response) => { this.clear(clearOnlyTagName); });
