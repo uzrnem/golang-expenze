@@ -7,7 +7,7 @@ type Activity struct {
 	FromAccountID int64   `json:"from_account_id" gorm:"column:from_account_id"`
 	ToAccountID int64   `json:"to_account_id" gorm:"column:to_account_id"`
 	TagID int64   `json:"tag_id" gorm:"column:tag_id"`
-	Amount          float64   `json:"amount,string" gorm:"column:amount"`
+	Amount          float64   `json:"amount" gorm:"column:amount"`
 	SubTagID int64   `json:"sub_tag_id" gorm:"column:sub_tag_id"`
 	EventDate string `json:"event_date" gorm:"column:event_date"`
 	Remarks string `json:"remarks" gorm:"column:remarks"`
@@ -17,15 +17,7 @@ type Activity struct {
 }
 
 type FullActivity struct {
-	ID   uint   `json:"id" gorm:"primaryKey"`
-	FromAccountID int64   `json:"from_account_id" gorm:"column:from_account_id"`
-	ToAccountID int64   `json:"to_account_id" gorm:"column:to_account_id"`
-	TagID int64   `json:"tag_id" gorm:"column:tag_id"`
-	Amount          string   `json:"amount" gorm:"column:amount"`
-	SubTagID int64   `json:"sub_tag_id" gorm:"column:sub_tag_id"`
-	EventDate string `json:"event_date" gorm:"column:event_date"`
-	Remarks string `json:"remarks" gorm:"column:remarks"`
-	TransactionTypeID int64   `json:"transaction_type_id" gorm:"column:transaction_type_id"`
+	Activity
 	FromAccount       string  `json:"from_account"`
 	ToAccount         string  `json:"to_account"`
 	Tag               string  `json:"tag"`

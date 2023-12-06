@@ -178,8 +178,8 @@
           </select><br />
           <input type="text" class="form-control" id="remark" placeholder="Enter remark" v-model="form.remarks">
         </div>
-        <button class="btn btn-primary" v-on:click="processForm()">Submit</button>
-        <button class="btn btn-secondary" v-on:click="processHalfForm()">Submit and Keep Form Data</button>
+        <button class="btn btn-primary" v-on:click="processForm(false)">Submit</button>
+        <button class="btn btn-secondary" v-on:click="processForm(true)">Submit and Keep Form Data</button>
         
       </div>
     </div>
@@ -298,35 +298,21 @@
       created() {
       },
       methods: {
-        processForm: function() {
+        processForm: function(keepData = false) {
           this.form.from_account_id = parseInt(this.form.from_account_id);
           this.form.to_account_id = parseInt(this.form.to_account_id);
+          this.form.tag_id = parseInt(this.form.tag_id);
+          this.form.sub_tag_id = parseInt(this.form.sub_tag_id);
+          this.form.amount = parseFloat(this.form.amount);
           axios.post('activities', this.form)
           .then((response) => {
             this.form = {
               from_account_id: this.form.from_account_id,
               to_account_id: this.form.to_account_id,
-              tag_id: 0,
-              sub_tag_id: 0,
+              tag_id: keepData? this.form.tag_id: 0,
+              sub_tag_id: keepData? this.form.sub_tag_id: 0,
               amount: null,
-              event_date: new Date().toISOString().slice(0,10),
-              remarks: null
-            }
-            this.reloadAll();
-          });
-        },
-        processHalfForm: function() {
-          this.form.from_account_id = parseInt(this.form.from_account_id);
-          this.form.to_account_id = parseInt(this.form.to_account_id);
-          axios.post('activities', this.form)
-          .then((response) => {
-            this.form = {
-              from_account_id: this.form.from_account_id,
-              to_account_id: this.form.to_account_id,
-              tag_id: this.form.tag_id,
-              sub_tag_id: this.form.sub_tag_id,
-              amount: null,
-              event_date: this.form.event_date,
+              event_date: keepData? this.form.event_date: new Date().toISOString().slice(0,10),
               remarks: null
             }
             this.reloadAll();

@@ -8,11 +8,8 @@ type Tag struct {
 }
 
 type FullTag struct {
-	ID                uint   `json:"id"`
-	Name              string `json:"name"`
-	TagID             uint   `json:"tag_id"`
+	Tag
 	Parent            string `json:"parent"`
-	TransactionTypeID uint   `json:"transaction_type_id"`
 	Type              string `json:"type"`
 	TagCount          uint   `json:"tag_count"`
 }

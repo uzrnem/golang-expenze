@@ -287,13 +287,13 @@
           .then((response) => {
             this.allTags = response.data;
             this.allTags.forEach((item, index) => {
-              if (item.tag_id == 0) {
+              if (!item.tag_id) {
                 this.tree["id_" +item.id] = item
                 this.tree["id_" +item.id].childs = []
               }
             })
             this.allTags.forEach((item, index) => {
-              if (item.tag_id != 0) {
+              if (item.tag_id && item.tag_id > 0) {
                 this.tree["id_" +item.tag_id].childs.push(item)
               }
             })

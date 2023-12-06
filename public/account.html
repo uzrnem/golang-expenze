@@ -216,6 +216,11 @@
           if (modal.account_type_id) {
             obj.account_type_id = parseInt(modal.account_type_id);
           }
+          if (isNaN(modal.amount)) {
+            obj.amount = 0;
+          } else {
+            obj.amount = parseInt(modal.amount);
+          }
           return obj;
         },
         save: function() {
