@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"os"
 	"fmt"
-	"strings"
+	"os"
 	"strconv"
+	"strings"
 )
 
 // ReadEnvOrDefault returns the value of the environment variable specified by 'key',

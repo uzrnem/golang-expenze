@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"expensez/pkg/utils"
 	v "expensez/pkg/validator"
 	"expensez/src/models"
@@ -9,7 +10,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"encoding/json"
 
 	"github.com/labstack/echo"
 )
