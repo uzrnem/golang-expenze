@@ -32,6 +32,7 @@ func main() {
 	routes.SetupRoutes(e, "/passbooks", controller.PassbookCtrl)
 	routes.SetupRoutes(e, "/statements", controller.StatementCtrl)
 	routes.SetupRoutes(e, "/account_types", controller.AccountTypeCtrl)
+	routes.SetupRoutes(e, "/subscriptions", controller.SubscriptionCtrl)
 	e.GET("/accounts/type/:accountType", controller.ExtendedCtrl.FindAccountByType)
 	e.GET("/tags/transactions/hits", controller.ExtendedCtrl.GetTagsByTranscationHits)
 	e.GET("/accounts/chart/share", controller.ExtendedCtrl.BalanceSheet)

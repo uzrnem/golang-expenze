@@ -1,4 +1,4 @@
-#docker-compose -f docker-compose-full.yml up -d
+#docker-compose -f docker-compose.yml up -d
 version: '3.7'
 
 services:
@@ -44,6 +44,20 @@ services:
       EXP_CONFIG_PORT_NUMB: 3306
     ports:
       - 9001:9001
+    networks:
+      - mysql-database
+
+  phinx:
+    image: uzrnem/phinx:0.4
+    container_name: phinx
+    volumes:
+      - $PWD/schema:/phinx/db
+    environment:
+      PHINX_DB_HOST: mysqlhost
+      PHINX_DB_DATABASE: expense
+      PHINX_DB_USERNAME: root
+      PHINX_DB_PASSWORD: root
+    command: tail -f /dev/null
     networks:
       - mysql-database
 
