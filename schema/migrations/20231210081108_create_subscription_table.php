@@ -23,7 +23,6 @@ final class CreateSubscriptionTable extends AbstractMigration
         $table->addColumn('title', 'string', ['limit' => 255, 'null' => false])
             ->addColumn('description', 'string', ['limit' => 255, 'null' => true])
             ->addColumn('amount', 'float', ['null' => false])
-            ->addColumn('actual_amount', 'float', ['null' => true])
             ->addColumn('start_date', 'datetime', ['null' => true])
             ->addColumn('end_date', 'datetime', ['null' => false])
             ->addColumn('due_date', 'datetime', ['null' => true])

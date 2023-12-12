@@ -48,7 +48,7 @@ services:
       - mysql-database
 
   phinx:
-    image: uzrnem/phinx:0.4
+    image: uzrnem/phinx:0.4 # uzrnem/phinx:0.4-mac
     container_name: phinx
     volumes:
       - $PWD/schema:/phinx/db

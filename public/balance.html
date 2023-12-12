@@ -72,21 +72,27 @@
             <a class="dropdown-item" href="credit_card.html">Credit Card</a>
           </div>
         </li>
-        <li class="nav-item dropdown active"
-          onclick="document.getElementById('dd-status').classList.toggle('c-block')">
-          <a class="nav-link dropdown-toggle"> Status </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-status">
-            <a class="dropdown-item active" href="balance.html">Balance</a>
-            <a class="dropdown-item" href="expenses.html">Expenses</a>
-          </div>
-        </li>
         <li class="nav-item">
           <a class="nav-link" href="subscription.html">Subscription</a>
         </li>
+        <li class="nav-item dropdown"
+          onclick="document.getElementById('dd-stock').classList.toggle('c-block')">
+          <a class="nav-link dropdown-toggle">Stocks</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-stock">
+            <a class="dropdown-item" href="stock.html">List</a>
+            <a class="dropdown-item" href="sold-stocks.html">History</a>
+          </div>
+        </li>
       </ul>
       <ul class="nav navbar-nav navbar-right pr-5">
-        <li class="nav-item">
-          <a class="nav-link" href="account.html">Accounts</a>
+        <li class="nav-item dropdown active"
+          onclick="document.getElementById('dd-account').classList.toggle('c-block')">
+          <a class="nav-link dropdown-toggle">Accounts</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-account">
+            <a class="dropdown-item" href="account.html">List</a>
+            <a class="dropdown-item active" href="balance.html">Balance</a>
+            <a class="dropdown-item" href="expenses.html">Expenses</a>
+          </div>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="tag.html">Tag</a>

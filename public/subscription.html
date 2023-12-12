@@ -90,7 +90,7 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
+        <li class="nav-item">
           <a class="nav-link" href="index.html">Transaction</a>
         </li>
         <li class="nav-item">
@@ -104,21 +104,27 @@
             <a class="dropdown-item" href="credit_card.html">Credit Card</a>
           </div>
         </li>
-        <li class="nav-item dropdown"
-          onclick="document.getElementById('dd-status').classList.toggle('c-block')">
-          <a class="nav-link dropdown-toggle"> Status </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-status">
-            <a class="dropdown-item" href="balance.html">Balance</a>
-            <a class="dropdown-item" href="expenses.html">Expenses</a>
-          </div>
-        </li>
-        <li class="nav-item">
+        <li class="nav-item active">
           <a class="nav-link" href="subscription.html">Subscription</a>
+        </li>
+        <li class="nav-item dropdown"
+          onclick="document.getElementById('dd-stock').classList.toggle('c-block')">
+          <a class="nav-link dropdown-toggle">Stocks</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-stock">
+            <a class="dropdown-item" href="stock.html">List</a>
+            <a class="dropdown-item" href="sold-stocks.html">History</a>
+          </div>
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right pr-5">
-        <li class="nav-item">
-          <a class="nav-link" href="account.html">Accounts</a>
+        <li class="nav-item dropdown"
+          onclick="document.getElementById('dd-account').classList.toggle('c-block')">
+          <a class="nav-link dropdown-toggle">Accounts</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-account">
+            <a class="dropdown-item" href="account.html">List</a>
+            <a class="dropdown-item" href="balance.html">Balance</a>
+            <a class="dropdown-item" href="expenses.html">Expenses</a>
+          </div>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="tag.html">Tag</a>
@@ -128,144 +134,111 @@
   </nav>
 <div class="container" id="transaction-app">
   <div class="row justify-content-md-center">
-    <div class="col col-md-6">
-      <div >
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" value="" id="customSwitches" v-model="showAllAcounts" @change="getAccounts()">
-          <label class="form-check-label" for="customSwitches">
-            Show All Accounts
-          </label>
+    <form id="editForm">
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label>Title</label>
+          <input type="text" class="form-control" v-model="editModel.title" placeholder="Title">
         </div>
-        <div class="form-group">
-          <label for="amount">Account from:</label>
-          <select v-model="form.from_account_id" class="form-control" @change="accountChange(0)">
-            <option value=0>Select Account</option>
-            <option v-for="account in accounts" :value="account.id">{{ account.name + " : " + Number(account.amount).toLocaleString('en') }}</option>
+        <div class="form-group col-md-4">
+          <label>Description</label>
+          <input type="text" class="form-control" v-model="editModel.description" placeholder="Description">
+        </div>
+        <div class="form-group col-md-4">
+          <label>Type</label>
+          <select v-model="editModel.type" class="form-control" placeholder="Select Type">
+            <option value=0>Select Type</option>
+            <option v-for="tipe in ['prepaid', 'postpaid']" :value="tipe">{{ tipe }}</option>
           </select>
         </div>
-        <div class="form-group">
-          <label for="amount">Account to:</label>
-          <select v-model="form.to_account_id" class="form-control" @change="accountChange(0)">
-            <option value=0>Select Account</option>
-            <option v-for="account in accounts" :value="account.id">{{ account.name + " : " + Number(account.amount).toLocaleString('en') }}</option>
-          </select>
+        <div class="form-group col-md-4">
+          <label for="amount">Start Date</label>
+          <input type="date" id="start_date" name="start_date" value="" class="form-control"
+            v-model="editModel.start_date" pattern="dd/mm/yyyy">
         </div>
-        <div class="form-group">
-          <label for="amount">Tag:</label>
-          <select v-model="form.tag_id" class="form-control" @change="accountChange(form.tag_id)">
-            <option value=0>Select Tag</option>
-            <option v-for="tag in tags" :value="tag.id">{{ tag.name }}</option>
-          </select>
+        <div class="form-group col-md-4">
+          <label for="amount">End Date</label>
+          <input type="date" id="end_date" name="end_date" value="" class="form-control"
+            v-model="editModel.end_date" pattern="dd/mm/yyyy">
         </div>
-        <div class="form-group">
-          <label for="amount">Sub Tag:</label>
-          <select v-model="form.sub_tag_id" class="form-control">
-            <option value=0>Select Sub Tag</option>
-            <option v-for="tag in sub_tags" :value="tag.id">{{ tag.name }}</option>
-          </select>
+        <div class="form-group col-md-4">
+          <label for="amount">Due Date</label>
+          <input type="date" id="due_date" name="due_date" value="" class="form-control"
+            v-model="editModel.due_date" pattern="dd/mm/yyyy">
         </div>
-        <div class="form-group">
-          <label for="amount" class="col-form-label">Amount:</label>
-          <input type="number" class="form-control" id="amount" placeholder="Enter amount" v-model="form.amount">
+        <div class="form-group col-md-4">
+          <label>Amount</label>
+          <input type="number" class="form-control" v-model="editModel.amount" placeholder="Amount">
         </div>
-        <div class="form-group">
-          <label for="amount">Date:</label>
-          <input type="date" id="event_date" name="event_date" value="" class="form-control"
-            v-model="form.event_date" pattern="dd/mm/yyyy">
-        </div>
-        <div class="form-group"><!-- this.form.remarks_options -->
-          <label for="remark">Remark:</label> <a @click="form.remarks=''">clear</a>
-          <select v-model="form.remarks" class="form-control"
-            v-if="form.remarks_options && form.remarks_options.length" placeholder="Select Remark">
-            <option v-for="item in form.remarks_options" :value="item.trim()">{{ item.trim() }}</option>
-          </select><br />
-          <input type="text" class="form-control" id="remark" placeholder="Enter remark" v-model="form.remarks">
-        </div>
-        <button class="btn btn-primary" v-on:click="processForm(false)">Submit</button>
-        <button class="btn btn-secondary" v-on:click="processForm(true)">Submit and Keep Form Data</button>
-        
-      </div>
-    </div>
-    <div class="col col-md-6">
-      <div class="form-group">
-        <div class="row">
-          <div class="col-sm-6">
-            <select v-model="transaction.account_id" class="form-control" @change="accountChangeTransaction()">
-              <option value=0>Select Account</option>
-              <option v-for="account in accounts" :value="account.id">{{ account.name + " : "  + Number(account.amount).toLocaleString('en') }}</option>
-            </select>
-          </div>
-          <div class="col-sm-2">
-            <button class="btn btn-primary" v-on:click="accountChangeTransaction()">Refresh</button>
-          </div>
-        </div>
-        <br />
-        <div v-if="transaction.account_id == 0">
-          <div>
-            <div class="card text-center" v-for="activity in activities">
-              <div class="card-header d-flex" style="height: 24px;">
-                <div class="pull-left">
-                  <span v-bind:class="[activity.transaction_type === 'Income' ? 't-green' : 't-blue']">{{activity.from_account || 'Credit'}}</span>
-                  <span class="t-blue-green"> > </span>
-                  <span v-bind:class="[activity.transaction_type === 'Expense' ? 't-red' : 't-blue']">{{activity.to_account || 'Debit'}}</span>
-                </div>
-                <div class="ml-auto pull-right t-blue ">
-                  {{format.format(activity.amount)}}
-                </div>
-              </div>
-              <div class="card-body" style="height: 24px;">
-                <div class="pull-left t-orange t-left">{{activity.tag}}: {{activity.sub_tag}}</div>
-                <div class="ml-auto pull-right t-blue-green font-14" v-if="activity.remarks && activity.remarks.length < 43">{{activity.remarks}}</div>
-                <div class="ml-auto pull-right t-blue-green font-14" v-if="activity.remarks && activity.remarks.length > 42" :title="activity.remarks">{{activity.remarks.substring(0,40)}}...</div>
-              </div>
-              <div class="card-footer text-muted" style="height: 24px;">
-                <div class="ml-auto pull-right t-high-blue">{{activity.event_date}}</div>
-              </div>
-            </div>
-            <div class="card text-center" v-if="activities.length == 0">
-              <div class="card-body" style="height: 24px;">
-                <p class="t-blue text-center">No Records Found!</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div v-else>
-          <div>
-            <div class="card text-center" v-for="passbook in passbooks">
-                <div class="card-header d-flex" style="height: 24px;">
-                  <div v-if="passbook.transaction_type === 'Transfer'" class="t-blue">{{passbook.transaction_type}}</div>
-                  <div v-else-if="passbook.transaction_type === 'Income'" class="t-green">{{passbook.transaction_type}}</div>
-                  <div v-else class="t-red">{{passbook.transaction_type}}</div>
-                  <div v-if="passbook.transaction_type === 'Transfer'" class="ml-auto pull-right t-blue ">{{format.format(passbook.amount)}}</div>
-                  <div v-else-if="passbook.transaction_type === 'Income'" class="ml-auto pull-right t-green">+ {{format.format(passbook.amount)}}</div>
-                  <div v-else class="ml-auto pull-right t-red">- {{format.format(passbook.amount)}}</div>
-                  <!-- div class="ml-auto" style="float: right; color:#03506f">{{passbook.amount}}</div -->
-                </div>
-                <div class="card-body" style="height: 24px;">
-                  <div class="pull-left t-orange">{{passbook.comment}}</div>
-                  <div class="ml-auto pull-right" v-if="transaction.account_id == passbook.from_account_id">
-                    <span class="font-14 t-blue-green">{{format.format(passbook.fp_previous_balance)}} / </span>
-                    <span class="t-blue">{{format.format(passbook.fp_balance)}}</span>
-                  </div>
-                  <div class="ml-auto pull-right" v-if="transaction.account_id == passbook.to_account_id">
-                    <span class="font-14 t-blue-green">{{format.format(passbook.tp_previous_balance)}} / </span>
-                    <span class="t-blue">{{format.format(passbook.tp_balance)}}</span>
-                  </div>
-                </div>
-                <div class="card-footer text-muted" style="height: 24px;">
-                  <div class="pull-left font-14 t-blue-green" v-if="passbook.remarks && passbook.remarks.length < 43">{{passbook.remarks}}</div>
-                  <div class="pull-left font-14 t-blue-green" v-if="passbook.remarks && passbook.remarks.length > 42" :title="passbook.remarks">{{passbook.remarks.substring(0,40)}}...</div>
-                  <div class="ml-auto t-high-blue pull-right">{{passbook.event_date}}</div>
-                </div>
-            </div>
-            <div class="card text-center" v-if="passbooks.length == 0">
-              <div class="card-body" style="height: 24px;">
-                <p class="t-blue text-center">No Records Found!</p>
-              </div>
-            </div>
-          </div>
+        <div class="form-group col-md-4">
+          <label>Payment Status</label>
+          <input class="form-control form-check-input ml-4" type="checkbox" value="" id="customSwitches" v-model="editModel.status">
+          <button class="btn btn-primary" v-if="!deleteId" @click="submit()">Save</button>
+          <button class="btn btn-warning" v-if="deleteId" @click="confirmDelete()">Delete Confirm</button>
+          <button class="btn btn-success" v-if="deleteId || editId" @click="clear()">Cancel</button>
         </div>
       </div>
+    </form>
+  </div>
+  <div class="row justify-content-md-center">
+    <div class="col-sm-12">
+      <br />
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>
+              <span class="pull-right">Start date</span>
+            </th>
+            <th>
+              <span class="pull-right">End date</span>
+            </th>
+            <th>
+              <span class="pull-right">Due date</span>
+            </th>
+            <th>
+              <span class="pull-right">Amount</span>
+            </th>
+            <th>Status</th>
+            <th>Action</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(subscription, i) in subscriptionList" :id="'item_' + subscription.id">
+            <td></td>
+            <td>{{subscription.title}}</td>
+            <td>{{subscription.description}}</td>
+            <td>{{subscription.type}}</td>
+            <td>
+              <span class="ml-auto t-high-blue pull-right">{{subscription.start_date}}</span>
+            </td>
+            <td>
+              <span class="ml-auto t-high-blue pull-right">{{subscription.end_date}}</span>
+            </td>
+            <td>
+              <span class="ml-auto t-high-blue pull-right">{{subscription.due_date}}</span>
+            </td>
+            <td>
+              <span class="ml-auto t-high-blue pull-right">{{subscription.amount}}</span>
+            </td>
+            <td>{{subscription.status}}</td>
+            <td>
+              <a class="btn btn-primary" href="#subscription" @click="editRecord(subscription)">E</a>
+              <a class="btn btn-danger" href="#subscription" @click="deleteRecord(subscription)">D</a>
+            </td>
+            <td></td>
+          </tr>
+          <tr>
+            <td colspan="11" v-if="subscriptionList && subscriptionList.length == 0">
+              <p class="t-blue text-center">No Records Found!</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -278,101 +251,57 @@
     var app = new Vue({
       el: '#transaction-app',
       data: {
-        tags: [],
-        sub_tags: [],
-        accounts: [],
-        activities: [],
-        passbooks: [],
-        showAllAcounts: false,
-        form: {
-          from_account_id: 0,
-          to_account_id: 0,
-          tag_id: 0,
-          sub_tag_id: 0,
-          amount: null,
-          event_date: new Date().toISOString().slice(0,10),
-          remarks: null
-        },
-        transaction: {
-          account_id: 0
-        },
-        format: new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
+        editModel:{},
+        subscriptionList: []
       },
       created() {
       },
       methods: {
-        processForm: function(keepData = false) {
-          this.form.from_account_id = parseInt(this.form.from_account_id);
-          this.form.to_account_id = parseInt(this.form.to_account_id);
-          this.form.tag_id = parseInt(this.form.tag_id);
-          this.form.sub_tag_id = parseInt(this.form.sub_tag_id);
-          this.form.amount = parseFloat(this.form.amount);
-          axios.post('activities', this.form)
-          .then((response) => {
-            this.form = {
-              from_account_id: this.form.from_account_id,
-              to_account_id: this.form.to_account_id,
-              tag_id: keepData? this.form.tag_id: 0,
-              sub_tag_id: keepData? this.form.sub_tag_id: 0,
-              amount: null,
-              event_date: keepData? this.form.event_date: new Date().toISOString().slice(0,10),
-              remarks: null
-            }
-            this.reloadAll();
-          });
-        },
-        getAccounts: function() {
-          if (!this.showAllAcounts) {
-            axios.get('/accounts?type=frequent')
-            .then((response) => {
-              this.accounts = response.data;
-            });
+        submit: function() {
+          if (this.editModel.start_date == "") {
+            this.editModel.start_date = null;
+          }
+          if (this.editModel.end_date == "") {
+            this.editModel.end_date = null;
+          }
+          if (this.editModel.due_date == "") {
+            this.editModel.due_date = null;
+          }
+          this.editModel.amount = parseFloat(this.editModel.amount);
+          if (this.editId) {
+            axios.post('subscriptions/'+this.editId, this.editModel )
+            .then((subscriptions) => { this.clear(); });
           } else {
-            axios.get('accounts')
-            .then((response) => {
-              this.accounts = response.data;
-            });
+            axios.post('subscriptions', this.editModel )
+            .then((subscriptions) => { this.clear(); });
           }
         },
-        accountChangeTransaction: function() {
-          if (this.transaction.account_id == null || this.transaction.account_id == "") {
-            this.transaction.account_id = 0
-          }
-          if (this.transaction.account_id == 0) {
-            axios.get('activities/', { params: { page_size: 15 } })
-            .then((response) => {
-              this.activities = response.data.list;
-            });
-          } else {
-            axios.get('activities/', { params: { page_size: 15, account_id: this.transaction.account_id } })
-            .then((response) => {
-              this.passbooks = response.data.list;
-            });
-          }
+        editRecord: function(item) {
+          this.editModel = { ...item };
+          this.editId = item.id;
         },
-        accountChange:function (tag_id) {
-          if (tag_id == null || tag_id == undefined) {
-            tag_id = 0
-          }
-          this.form.tag_id = tag_id
-          if ( this.form.to_account_id == this.form.from_account_id) {
-            this.form.to_account_id = 0
-          }
-          axios.get('tags/transactions/hits?from_account_id='+ this.form.from_account_id + 
-            '&to_account_id=' +this.form.to_account_id+'&tag_id='+this.form.tag_id)
-          .then((response) => {
-            this.tags = response.data.tags;
-            this.sub_tags = response.data.sub_tags;
-            this.form.tag_id = response.data.tag_id;
-            this.form.sub_tag_id = response.data.sub_tag_id;
-            if ( response.data.remarks && response.data.remarks.length > 0 ) {
-              this.form.remarks_options = response.data.remarks.split(',');
-            }
-          });
+        deleteRecord: function(item) {
+          this.editModel = { ...item };
+          this.deleteId = item.id;
+        },
+        confirmDelete: function() {
+          axios.delete('subscriptions/'+this.deleteId, this.editModel )
+          .then((response) => { this.clear(); });
+        },
+        clear: function() {
+          this.editModel = {};
+          this.editId = null;
+          this.deleteId = null;
+          this.getSubscription();
+        },
+        getSubscription: function() {
+            axios.get('subscriptions')
+            .then((response) => {
+              this.subscriptionList = response.data;
+            });
         },
         reloadAll() {
-          this.getAccounts();
-          this.accountChangeTransaction();
+          this.getSubscription();
         }
       },
       mounted() {

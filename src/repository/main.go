@@ -65,6 +65,17 @@ func (r *RepoStrct) List(c echo.Context, modal any) (any, error) {
 	return modal, nil
 }
 
+func (r *RepoStrct) ListWithCondition(c echo.Context, modal any, where map[string]any, orderBy string) (any, error) {
+	if orderBy == "" {
+		orderBy = "id desc"
+	}
+	err := r.MysqlDB.Order(orderBy).Where(where).Find(modal).Error
+	if err != nil {
+		return nil, err
+	}
+	return modal, nil
+}
+
 func (r *RepoStrct) FetchWithQuery(c echo.Context, modal any, where, order string) error {
 	return r.MysqlDB.Debug().Model(modal).Where(where).Order(order).Find(modal).Error
 }

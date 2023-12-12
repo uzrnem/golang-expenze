@@ -51,6 +51,7 @@ class TagSeeder extends AbstractSeed
 
         $parentId = $this->adapter->fetchRow('SELECT id FROM `tags` where name = "'.$parent.'"');
         if (empty($parentId)) {
+            $parentId = [];
             $table = $this->table('tags');
             $data = [
                 [

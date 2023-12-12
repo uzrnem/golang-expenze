@@ -34,6 +34,8 @@ func Load() error {
 		{load: controller.PassbookLoad, err: "PassbookController: failed to load"},
 		{load: controller.StatementLoad, err: "StatementController: failed to load"},
 		{load: controller.ExtendedLoad, err: "ExtendedController: failed to load"},
+		{load: controller.SubscriptionLoad, err: "SubscriptionController: failed to load"},
+		{load: controller.StockLoad, err: "StockController: failed to load"},
 	}
 
 	err := validator.Load(ErrorMap)
