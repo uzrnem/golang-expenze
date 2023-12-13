@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"expensez/pkg/utils"
 	v "expensez/pkg/validator"
 	"expensez/src/models"
 	"expensez/src/repository"
@@ -81,14 +82,25 @@ func (t *StatementController) Update(c echo.Context) error {
 }
 
 func (t *StatementController) List(c echo.Context) error {
+	pageIndex := c.QueryParam("page_index")
+	pageSize := c.QueryParam("page_size")
+	limit := utils.StringToInt(pageSize)
+	offset := (utils.StringToInt(pageIndex) - 1) * limit
 	list := &[]models.FullStatement{}
 	table := "statements s"
 	silect := `s.id, s.account_id, acc.name, s.amount, DATE_FORMAT(s.event_date, "%Y-%m-%d") as event_date, s.remarks`
 	orderBy := "s.event_date desc"
 	join := "LEFT JOIN accounts acc on s.account_id = acc.id"
-	err := t.repo.FetchWithFullQuery(c, list, table, silect, join, "", "", orderBy, 100, 0)
+	err := t.repo.FetchWithFullQuery(c, list, table, silect, join, "", "", orderBy, limit, offset)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
+	var count float64
+	t.repo.FetchRow("SELECT COUNT(id) as count FROM statements", &count)
+
+	return c.JSON(http.StatusOK, map[string]any{
+		"list":  list,
+		"total": count,
+	})
 	return c.JSON(http.StatusOK, list)
 }

@@ -14,6 +14,7 @@
   body {
     background-color: #eeeeee;
     font-size: 17px;
+    padding-bottom: 2rem !important;
   }
   p {
     margin: 0 !important;
@@ -84,13 +85,8 @@
         <li class="nav-item">
           <a class="nav-link" href="subscription.html">Subscription</a>
         </li>
-        <li class="nav-item dropdown"
-          onclick="document.getElementById('dd-stock').classList.toggle('c-block')">
-          <a class="nav-link dropdown-toggle">Stocks</a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-stock">
-            <a class="dropdown-item" href="stock.html">List</a>
-            <a class="dropdown-item" href="sold-stocks.html">History</a>
-          </div>
+        <li class="nav-item">
+          <a class="nav-link" href="stock.html">Stocks</a>
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right pr-5">
@@ -185,6 +181,53 @@
           </tbody>
         </table>
       </div>
+
+      <div class="col-sm-4">
+        <nav class="bulma bulma-nav">
+          <ul class="bulma-nav-ul" style="list-style-type:none;">
+            <li v-bind:class="[transaction.page_size === 10 ? 'nav-item is-current' : 'nav-item']">
+              <a class="bulma-nav-link" @click="transaction.page_size = 10;getStatement()">10</a>
+            </li>
+            <li v-bind:class="[transaction.page_size === 20 ? 'nav-item is-current' : 'nav-item']">
+              <a class="bulma-nav-link" @click="transaction.page_size = 20;getStatement()">20</a>
+            </li>
+            <li v-bind:class="[transaction.page_size === 40 ? 'nav-item is-current' : 'nav-item']">
+              <a class="bulma-nav-link" @click="transaction.page_size = 40;getStatement()">40</a>
+            </li>
+            <li v-bind:class="[transaction.page_size === 80 ? 'nav-item is-current' : 'nav-item']">
+              <a class="bulma-nav-link" @click="transaction.page_size = 80;getStatement()">80</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="col-sm-8">
+        <nav class="bulma bulma-page pull-right">
+          <a class="bulma-page-link" :disabled="transaction.page_index === 1"
+             @click="pagePrevious()">Previous</a>
+          <a class="bulma-page-link" :disabled="transaction.page_total === 1 || transaction.page_total === transaction.page_index"
+             @click="pageNext()">Next page</a>
+          <ul class="bulma-page-ul" style="list-style-type:none;">
+            <li v-if="transaction.page_index > 2">
+              <a class="bulma-page-link" @click="changePage(1)">1</a>
+            </li>
+            <li v-if="transaction.page_index > 3"><a class="bulma-page-ellipsis">&hellip;</a></li>
+
+            <li v-if="transaction.page_index > 1">
+              <a class="bulma-page-link" @click="changePage(transaction.page_index - 1)">{{transaction.page_index - 1}}</a>
+            </li>
+            <li class="is-current"><a class="bulma-page-link">{{transaction.page_index}}</a></li>
+            <li v-if="(transaction.page_total - transaction.page_index) > 0">
+              <a class="bulma-page-link" @click="changePage(transaction.page_index + 1)">{{transaction.page_index + 1}}</a>
+            </li>
+
+            <li v-if="(transaction.page_total - transaction.page_index) > 2"><a class="bulma-page-ellipsis">&hellip;</a></li>
+            <li v-if="(transaction.page_total - transaction.page_index) > 1">
+              <a class="bulma-page-link" @click="changePage(transaction.page_total)">{{transaction.page_total}}</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
     </div>
   </div>
 </body>
@@ -230,6 +273,11 @@
         accounts: [],
         statements: [],
         duration: 1,
+        transaction: {
+          page_index: 1,
+          page_size: 10,
+          page_total: 0
+        },
         format: new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })
       },
       created() {
@@ -251,10 +299,34 @@
             .then((response) => { this.clear(); });
           }
         },
+        pagePrevious: function()  {
+          if (this.transaction.page_index > 1 ) {
+            this.transaction.page_index --;
+            this.getStatement();
+          }
+        },
+        pageNext: function() {
+          if (this.transaction.page_index != this.transaction.page_total && this.transaction.page_total != 1) {
+            this.transaction.page_index ++;
+            this.getStatement();
+          }
+        },
+        changePage: function(n) {
+          this.transaction.page_index = n;
+          this.getStatement();
+        },
         getStatement: function() {
-          axios.get('/statements')
+          axios.get('/statements', { params: this.transaction })
           .then((response) => {
-            this.statements = response.data;
+            this.statements = response.data.list;
+            listCount = response.data.total;
+
+            pageWeight = this.transaction.page_size;
+            b = listCount % pageWeight;
+            if (b > 0) {
+              listCount = listCount + (pageWeight - b);
+            }
+            this.transaction.page_total = listCount / pageWeight;
           });
         },
         getCardNameAndExpense: function(item) {

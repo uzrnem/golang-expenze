@@ -81,7 +81,10 @@ func (r *RepoStrct) FetchWithQuery(c echo.Context, modal any, where, order strin
 }
 
 func (r *RepoStrct) FetchWithFullQuery(c echo.Context, list any, table, silect, joins, where, groupBy, orderBy string, limit, offset int) error {
-	db := r.MysqlDB.Debug().Table(table)
+	db := r.MysqlDB.Debug() //.Table(table)
+	if strings.TrimSpace(table) != "" {
+		db = db.Table(table)
+	}
 	if strings.TrimSpace(silect) != "" {
 		db = db.Select(silect)
 	}

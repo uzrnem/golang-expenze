@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"expensez/pkg/utils"
 	v "expensez/pkg/validator"
 	"expensez/src/models"
 	"expensez/src/repository"
@@ -81,13 +82,26 @@ func (t *StockController) Update(c echo.Context) error {
 }
 
 func (t *StockController) List(c echo.Context) error {
+	pageIndex := c.QueryParam("page_index")
+	pageSize := c.QueryParam("page_size")
 	status := c.QueryParam("status")
-	where := map[string]any{"status": status}
+
+	limit := utils.StringToInt(pageSize)
+	offset := (utils.StringToInt(pageIndex) - 1) * limit
+	where := "status = '" + status + "'"
 	orderBy := "sell_date desc, buy_date desc"
+
 	list := &[]models.Stock{}
-	res, err := t.repo.ListWithCondition(c, list, where, orderBy)
+	err := t.repo.FetchWithFullQuery(c, list, "", "", "", where, "", orderBy, limit, offset)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	return c.JSON(http.StatusOK, res)
+	var count float64
+	t.repo.FetchRow("SELECT COUNT(id) as count FROM stocks WHERE " + where, &count)
+
+	return c.JSON(http.StatusOK, map[string]any{
+		"list":  list,
+		"total": count,
+	})
+	return c.JSON(http.StatusOK, list)
 }
