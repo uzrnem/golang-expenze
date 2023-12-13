@@ -99,18 +99,22 @@
             <a class="dropdown-item" href="credit_card.html">Credit Card</a>
           </div>
         </li>
-        <li class="nav-item dropdown"
-          onclick="document.getElementById('dd-status').classList.toggle('c-block')">
-          <a class="nav-link dropdown-toggle"> Status </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-status">
-            <a class="dropdown-item" href="balance.html">Balance</a>
-            <a class="dropdown-item" href="expenses.html">Expenses</a>
-          </div>
+        <li class="nav-item">
+          <a class="nav-link" href="subscription.html">Subscription</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="stock.html">Stocks</a>
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right pr-5">
-        <li class="nav-item">
-          <a class="nav-link" href="account.html">Accounts</a>
+        <li class="nav-item dropdown"
+          onclick="document.getElementById('dd-status').classList.toggle('c-block')">
+          <a class="nav-link dropdown-toggle">Accounts</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-status">
+            <a class="dropdown-item" href="account.html">List</a>
+            <a class="dropdown-item" href="balance.html">Balance</a>
+            <a class="dropdown-item" href="expenses.html">Expenses</a>
+          </div>
         </li>
         <li class="nav-item active">
           <a class="nav-link" href="tag.html">Tag</a>
@@ -168,7 +172,7 @@
             <span class="input-group-text">Search Tag</span>
           </div>
           <select class="custom-select" v-model="parentModelKey"
-            @click="getSearchTags(parentModelKey)">
+            @change="getSearchTags(parentModelKey)">
             <option value="0">Select Tag...</option>
             <option  v-for="(item, key) in allTags" :value="item.id" v-bind:key="key">{{item.name}}</option>
           </select>

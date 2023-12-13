@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Expenze</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./bootstrap.min.css">
+  <script src="./jquery.min.js"></script>
+  <script src="./axios.min.js"></script>
+  <script src="./bootstrap.min.js"></script>
+  <script src="vue-2.6.12.js"></script>
+  <style>
+  body {
+    background-color: #eeeeee;
+  }
+  .card {
+    border: 1px solid #fac16b;
+    /* border-color: #fac16b; */
+    border-radius: 5px;
+    margin: 4px;
+    padding: 8px;
+    font-size: 17px;
+    box-shadow: 0 .5rem 1rem #ffebcc!important;
+    margin-bottom: 10px;
+    background-color: #fffbf5;
+  }
+  .card-header {
+    padding: 0rem;
+    background-color: transparent;
+    border-bottom: 0px;
+  }
+  .card-body {
+    padding: 0rem;
+  }
+  .card-footer {
+    padding: 0rem;
+    background-color: transparent;
+    border-top: 0px;
+  }
+  label {
+    margin-bottom: 0rem;
+  }
+  .form-group {
+    margin-bottom: .25rem;
+  }
+  .navbar {
+    margin-bottom: 1rem !important;
+  }
+  .pull-left {
+    float: left;
+  }
+  .pull-right {
+    float: right;
+  }
+  .font-14 {
+    font-size: 14px;
+  }
+  .t-italic {
+    font-style: italic;
+  }
+  .t-blue-green {
+    color: #f56038; /*remark */
+  }
+  .t-high-blue { /* date */
+    color: #14606b;
+  }
+  .t-blue{
+    color: #0c3940; /* #0a2f35; */
+  }
+  .t-green{
+    color: #196642;
+  }
+  .t-red{
+    color: #791f06;
+  }
+  .t-orange {
+    color: #4a2d03; /*tag*/
+  }
+  .c-block {
+    display: block;
+  }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg  navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Expenze</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="index.html">Transaction</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="history.html">History</a>
+        </li>
+        <li class="nav-item dropdown"
+          onclick="document.getElementById('dd-statement').classList.toggle('c-block')">
+          <a class="nav-link dropdown-toggle"> Statement </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-statement">
+            <a class="dropdown-item" href="statement_card_view.html">Card View</a>
+            <a class="dropdown-item" href="credit_card.html">Credit Card</a>
+          </div>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="subscription.html">Subscription</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="stock.html">Stocks</a>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right pr-5">
+        <li class="nav-item dropdown"
+          onclick="document.getElementById('dd-account').classList.toggle('c-block')">
+          <a class="nav-link dropdown-toggle">Accounts</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-account">
+            <a class="dropdown-item" href="account.html">List</a>
+            <a class="dropdown-item" href="balance.html">Balance</a>
+            <a class="dropdown-item" href="expenses.html">Expenses</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="tag.html">Tag</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+<div class="container" id="transaction-app">
+  <div class="row justify-content-md-center">
+    <form id="editForm">
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label>Title</label>
+          <input type="text" class="form-control" v-model="editModel.title" placeholder="Title">
+        </div>
+        <div class="form-group col-md-4">
+          <label>Description</label>
+          <input type="text" class="form-control" v-model="editModel.description" placeholder="Description">
+        </div>
+        <div class="form-group col-md-4">
+          <label>Type</label>
+          <select v-model="editModel.type" class="form-control" placeholder="Select Type">
+            <option value=0>Select Type</option>
+            <option v-for="tipe in ['prepaid', 'postpaid']" :value="tipe">{{ tipe }}</option>
+          </select>
+        </div>
+        <div class="form-group col-md-4">
+          <label for="amount">Start Date</label>
+          <input type="date" id="start_date" name="start_date" value="" class="form-control"
+            v-model="editModel.start_date" pattern="dd/mm/yyyy">
+        </div>
+        <div class="form-group col-md-4">
+          <label for="amount">End Date</label>
+          <input type="date" id="end_date" name="end_date" value="" class="form-control"
+            v-model="editModel.end_date" pattern="dd/mm/yyyy">
+        </div>
+        <div class="form-group col-md-4">
+          <label for="amount">Due Date</label>
+          <input type="date" id="due_date" name="due_date" value="" class="form-control"
+            v-model="editModel.due_date" pattern="dd/mm/yyyy">
+        </div>
+        <div class="form-group col-md-4">
+          <label>Amount</label>
+          <input type="number" class="form-control" v-model="editModel.amount" placeholder="Amount">
+        </div>
+        <div class="form-group col-md-4">
+          <label>Payment Status</label>
+          <input class="form-control form-check-input ml-4" type="checkbox" value="" id="customSwitches" v-model="editModel.status">
+          <button class="btn btn-primary" v-if="!deleteId" @click="submit()">Save</button>
+          <button class="btn btn-warning" v-if="deleteId" @click="confirmDelete()">Delete Confirm</button>
+          <button class="btn btn-success" v-if="deleteId || editId" @click="clear()">Cancel</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="row justify-content-md-center">
+    <div class="col-sm-12">
+      <br />
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>
+              <span class="pull-right">Start date</span>
+            </th>
+            <th>
+              <span class="pull-right">End date</span>
+            </th>
+            <th>
+              <span class="pull-right">Due date</span>
+            </th>
+            <th>
+              <span class="pull-right">Amount</span>
+            </th>
+            <th>Status</th>
+            <th>Action</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(subscription, i) in subscriptionList" :id="'item_' + subscription.id">
+            <td></td>
+            <td>{{subscription.title}}</td>
+            <td>{{subscription.description}}</td>
+            <td>{{subscription.type}}</td>
+            <td>
+              <span class="ml-auto t-high-blue pull-right">{{subscription.start_date}}</span>
+            </td>
+            <td>
+              <span class="ml-auto t-high-blue pull-right">{{subscription.end_date}}</span>
+            </td>
+            <td>
+              <span class="ml-auto t-high-blue pull-right">{{subscription.due_date}}</span>
+            </td>
+            <td>
+              <span class="ml-auto t-high-blue pull-right">{{subscription.amount}}</span>
+            </td>
+            <td>{{subscription.status}}</td>
+            <td>
+              <a class="btn btn-primary" href="#subscription" @click="editRecord(subscription)">E</a>
+              <a class="btn btn-danger" href="#subscription" @click="deleteRecord(subscription)">D</a>
+            </td>
+            <td></td>
+          </tr>
+          <tr>
+            <td colspan="11" v-if="subscriptionList && subscriptionList.length == 0">
+              <p class="t-blue text-center">No Records Found!</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+</body>
+
+  <!-- our javascript -->
+  <script>
+    var app = new Vue({
+      el: '#transaction-app',
+      data: {
+        editModel:{},
+        subscriptionList: []
+      },
+      created() {
+      },
+      methods: {
+        submit: function() {
+          if (this.editModel.start_date == "") {
+            this.editModel.start_date = null;
+          }
+          if (this.editModel.end_date == "") {
+            this.editModel.end_date = null;
+          }
+          if (this.editModel.due_date == "") {
+            this.editModel.due_date = null;
+          }
+          this.editModel.amount = parseFloat(this.editModel.amount);
+          if (this.editId) {
+            axios.post('subscriptions/'+this.editId, this.editModel )
+            .then((subscriptions) => { this.clear(); });
+          } else {
+            axios.post('subscriptions', this.editModel )
+            .then((subscriptions) => { this.clear(); });
+          }
+        },
+        editRecord: function(item) {
+          this.editModel = { ...item };
+          this.editId = item.id;
+        },
+        deleteRecord: function(item) {
+          this.editModel = { ...item };
+          this.deleteId = item.id;
+        },
+        confirmDelete: function() {
+          axios.delete('subscriptions/'+this.deleteId, this.editModel )
+          .then((response) => { this.clear(); });
+        },
+        clear: function() {
+          this.editModel = {};
+          this.editId = null;
+          this.deleteId = null;
+          this.getSubscription();
+        },
+        getSubscription: function() {
+            axios.get('subscriptions')
+            .then((response) => {
+              this.subscriptionList = response.data;
+            });
+        },
+        reloadAll() {
+          this.getSubscription();
+        }
+      },
+      mounted() {
+        this.reloadAll();
+      }
+    });
+  </script>
+</html>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Expenze</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./bootstrap.min.css">
+  <link rel="stylesheet" href="./bulma2.css">
+  <script src="./jquery.min.js"></script>
+  <script src="./axios.min.js"></script>
+  <script src="./bootstrap.min.js"></script>
+  <script src="vue-2.6.12.js"></script>
+  <style>
+  body {
+    background-color: #eeeeee;
+    padding-bottom: 1rem !important;
+  }
+  label {
+    margin-bottom: 0rem;
+  }
+  .form-group {
+    margin-bottom: .25rem;
+  }
+  .navbar {
+    margin-bottom: 1rem !important;
+  }
+  .pull-left {
+    float: left;
+  }
+  .pull-right {
+    float: right;
+  }
+  .font-14 {
+    font-size: 14px;
+  }
+  .t-italic {
+    font-style: italic;
+  }
+  .t-blue-green {
+    color: #f56038; /*remark */
+  }
+  .t-high-blue { /* date */
+    color: #14606b;
+  }
+  .t-blue{
+    color: #0c3940; /* #0a2f35; */
+  }
+  .t-green{
+    color: #196642;
+  }
+  .t-red{
+    color: #791f06;
+  }
+  .t-orange {
+    color: #4a2d03; /*tag*/
+  }
+  .c-block {
+    display: block;
+  }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg  navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Expenze</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="index.html">Transaction</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="history.html">History</a>
+        </li>
+        <li class="nav-item dropdown"
+          onclick="document.getElementById('dd-statement').classList.toggle('c-block')">
+          <a class="nav-link dropdown-toggle"> Statement </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-statement">
+            <a class="dropdown-item" href="statement_card_view.html">Card View</a>
+            <a class="dropdown-item" href="credit_card.html">Credit Card</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="subscription.html">Subscription</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="stock.html">Stocks</a>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right pr-5">
+        <li class="nav-item dropdown"
+          onclick="document.getElementById('dd-account').classList.toggle('c-block')">
+          <a class="nav-link dropdown-toggle">Accounts</a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown" id="dd-account">
+            <a class="dropdown-item" href="account.html">List</a>
+            <a class="dropdown-item" href="balance.html">Balance</a>
+            <a class="dropdown-item" href="expenses.html">Expenses</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="tag.html">Tag</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container" id="transaction-app">
+    <div class="row justify-content-md-center">
+      <div class="col-sm-12">
+        <div class=" pull-right">
+          <a @click="addStock = true" class="btn btn-primary" v-if="!addStock">Add Stock</a>
+          <a @click="addStock = false" class="btn btn-warning" v-if="addStock">Hide Form</a>
+        </div>
+      </div>
+      <div class="col-sm-12" v-if="addStock">
+        <form class="form mt-2" id="accounts">
+          <div class="form-row">
+            <div class="col-12 pull-right">
+            </div>
+            <div class="form-group col-xs-6 col-sm-4 col-md-3">
+              <label for="code">Code</label>
+              <input type="text" class="form-control" id="code" placeholder="Code" v-model="model.code">
+            </div>
+            <div class="form-group col-xs-6 col-sm-4 col-md-3">
+              <label for="current_quantity">Quantity</label> <!--current_quantity-->
+              <input type="text" class="form-control" id="current_quantity" placeholder="Quantity" :disabled="model.parent_id" v-model="model.current_quantity">
+            </div>
+            <div class="form-group col-xs-6 col-sm-4 col-md-3">
+              <label for="buy_price">Buy Price</label>
+              <input type="text" class="form-control" id="buy_price" placeholder="Buy Price" v-model="model.buy_price">
+            </div>
+            <div class="form-group col-xs-6 col-sm-4 col-md-3">
+              <label for="buy_charges">Buy Charges</label>
+              <input type="text" class="form-control" id="buy_charges" placeholder="Buy Charges" v-model="model.buy_charges">
+            </div>
+            <div class="form-group col-xs-6 col-sm-4 col-md-3">
+              <label for="buy_date">Buying Date</label>
+              <input type="date" id="buy_date" name="buy_date" class="form-control" v-model="model.buy_date">
+            </div>
+            <div class="form-group col-xs-6 col-sm-4 col-md-3">
+              <label for="description">Description</label>
+              <input type="text" class="form-control" id="description" placeholder="Description" v-model="model.description">
+            </div>
+          </div>
+          <a class="btn btn-primary" v-if="!deleteId" @click="save()">Save</a>
+          <a class="btn btn-warning" v-if="deleteId" @click="confirmDelete()">Delete Confirm</a>
+          <a class="btn btn-success" v-if="deleteId || editId" @click="clear()">Cancel</a>
+        </form>
+      </div>
+
+      <div v-bind:class="[showSoldStocks ? 'col-12' : 'col-12']">
+        <div class="pull-left ml-4">
+          <input class="form-check-input" type="checkbox" value="" id="customSwitches" v-model="showSoldStocks" @change="clear()">
+          <label class="form-check-label" for="customSwitches">
+            Show Sold Stocks Only
+          </label>
+        </div>
+      </div>
+
+      <div class="col-lg-12 col-md-12 col-sm-12" v-if="!showSoldStocks">
+        <br />
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Stock Code</th>
+              <th><span class="pull-right">Qty / Avg</span></th>
+              <th><span class="pull-right">Investment</span></th>
+              <th>Buying Date</th>
+              <th>Description</th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="account in accounts">
+              <td></td>
+              <td>{{account.code}}</td>
+              <td><span class="pull-right">{{account.current_quantity}} @ <span class="balance-amount">{{account.buy_price}}</span></span></td>
+              <td><span class="balance-amount pull-right">
+                {{Math.round((account.current_quantity * account.buy_price + account.buy_charges)*100)/100}}
+                ,&nbsp;<small class="balance-amount">{{account.buy_charges}}</small></span>
+              </td>
+              <td><span class="t-orange pull-right">{{account.buy_date.slice(0,10)}}</span></td>
+              <td><span class="t-orange pull-right">{{account.description}}</span></td>
+              <td>
+                <a class="btn btn-primary" href="#accounts" @click="editRecord(account)">E</a>
+                <a class="btn btn-danger" href="#accounts" @click="deleteRecord(account)">D</a>
+                <a class="btn btn-warning" href="#passbook" @click="sellRecord(account)">S</a>
+              </td>
+              <td><span class="t-orange"></span></td>
+            </tr>
+            <tr>
+              <td colspan="13" v-if="accounts.length == 0">
+                <p class="t-blue text-center">No Records Found!</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="col-lg-12 col-md-12 col-sm-12 mt-3 pl-0 pr-0" v-if="showSoldStocks">
+        <div v-for="(share, index) in accounts" :key="index" class="tb-clickable col-lg-12 col-md-12 col-sm-12 mb-3">
+
+          <div class="card">
+            <div class="card-body px-3" style="padding: 5px">
+              <div class="row">
+                <div class="col-lg-4 col-md-4 col-sm-4">
+                  <h5 class="card-title mb-0">{{share.code}}</h5>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4"> <h6 class="text-muted mb-0 mt-1 pull-right">{{share.description}}</h6> </div>
+                <div class="col-lg-4 col-md-4 col-sm-4">
+                  <h6 class="text-muted mb-0 mt-1">Buying Date: {{share.buy_date}}</h6>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4">
+                  <span class="t-blue">{{Number(share.current_quantity).toLocaleString('en')}} shares @
+                    <span class="balance-amount">{{Number(share.buy_price).toLocaleString('en')}}</span>
+                  </span>
+                  <br>
+                  <span class="t-blue">Investment: <span class="balance-amount">{{Number(share.invest).toLocaleString('en')}}<span>
+                    &nbsp;(<small class="balance-amount">{{Number(share.buy_charges).toLocaleString('en')}}</small>)</span>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4">
+                  <span class="t-blue-green"> Sold At:
+                    <span class="balance-amount">{{Number(share.sell_price).toLocaleString('en')}}</span>
+                    & <span class="balance-amount">{{Number(share.charges).toLocaleString('en')}} charges</span>
+                  </span>
+                  <br>
+                  <span class="t-blue">Value: <span class="balance-amount"
+                     v-bind:class="[share.is_profit ? 't-green' : 't-red']">{{Number(share.value).toLocaleString('en')}}</span>
+                     &nbsp;+&nbsp;<small class="balance-amount">{{Number(share.sell_charges).toLocaleString('en')}}</small>
+                  </span>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4">
+                  <span class="t-orange">Days: {{share.days}}, Sell Date: {{share.sell_date}}</span>
+                  <br>
+                  <span class="t-blue">P&L: <span class="balance-amount"
+                    v-bind:class="[share.is_profit ? 't-green' : 't-red']">{{Number(share.pl).toLocaleString('en')}}, {{Number(share.pl_percentage).toLocaleString('en')}}%</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr>
+      <div class="col-sm-12" id="passbook" v-if="sellId">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Stock Code</th>
+              <th><span class="pull-right">Qty / Avg</span></th>
+              <th><span class="pull-right">Investment</span></th>
+              <th>Description</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td></td>
+              <td><span class="t-orange">{{sell.code}}</span></td>
+              <td><span class="pull-right">{{sell.old_quantity}} @ <span class="balance-amount">{{sell.buy_price}}</span></span></td>
+              <td><span class="balance-amount pull-right">{{sell.old_quantity * sell.buy_price + sell.buy_charges}}</span></td>
+              <td><span class="t-orange pull-right">{{sell.description}}</span></td>
+              <td><span class="t-orange"></span></td>
+            </tr>
+          </tbody>
+        </table>
+        <form class="form mt-2">
+          <div class="form-row">
+            <div class="form-group col-xs-6 col-sm-4 col-md-3">
+              <label for="current_quantity">Quantity</label>
+              <input type="text" class="form-control" id="current_quantity" placeholder="Quantity" v-model="sell.current_quantity">
+            </div>
+            <div class="form-group col-xs-6 col-sm-4 col-md-3">
+              <label for="sell_price">Sell Price</label>
+              <input type="text" class="form-control" id="sell_price" placeholder="Sell Price" v-model="sell.sell_price">
+            </div>
+            <div class="form-group col-xs-6 col-sm-4 col-md-3">
+              <label for="sell_charges">Sell Charges</label>
+              <input type="text" class="form-control" id="sell_charges" placeholder="Sell Charges" v-model="sell.sell_charges">
+            </div>
+            <div class="form-group col-xs-6 col-sm-4 col-md-3">
+              <label for="buy_date">Sell Date</label>
+              <input type="date" id="sell_date" name="sell_date" class="form-control" v-model="sell.sell_date">
+            </div>
+          </div>
+          <a class="btn btn-primary" @click="sellingRecord()">Save</a>
+          <a class="btn btn-success" @click="clean()">Cancel</a>
+        </form>
+      </div>
+
+
+      <div class="col-sm-4">
+        <nav class="bulma bulma-nav">
+          <ul class="bulma-nav-ul" style="list-style-type:none;">
+            <li v-bind:class="[transaction.page_size === 10 ? 'nav-item is-current' : 'nav-item']">
+              <a class="bulma-nav-link" @click="transaction.page_size = 10;getAccounts()">10</a>
+            </li>
+            <li v-bind:class="[transaction.page_size === 20 ? 'nav-item is-current' : 'nav-item']">
+              <a class="bulma-nav-link" @click="transaction.page_size = 20;getAccounts()">20</a>
+            </li>
+            <li v-bind:class="[transaction.page_size === 40 ? 'nav-item is-current' : 'nav-item']">
+              <a class="bulma-nav-link" @click="transaction.page_size = 40;getAccounts()">40</a>
+            </li>
+            <li v-bind:class="[transaction.page_size === 80 ? 'nav-item is-current' : 'nav-item']">
+              <a class="bulma-nav-link" @click="transaction.page_size = 80;getAccounts()">80</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="col-sm-8">
+        <nav class="bulma bulma-page pull-right">
+          <a class="bulma-page-link" :disabled="transaction.page_index === 1"
+             @click="pagePrevious()">Previous</a>
+          <a class="bulma-page-link" :disabled="transaction.page_total === 1 || transaction.page_total === transaction.page_index"
+             @click="pageNext()">Next page</a>
+          <ul class="bulma-page-ul" style="list-style-type:none;">
+            <li v-if="transaction.page_index > 2">
+              <a class="bulma-page-link" @click="changePage(1)">1</a>
+            </li>
+            <li v-if="transaction.page_index > 3"><a class="bulma-page-ellipsis">&hellip;</a></li>
+
+            <li v-if="transaction.page_index > 1">
+              <a class="bulma-page-link" @click="changePage(transaction.page_index - 1)">{{transaction.page_index - 1}}</a>
+            </li>
+            <li class="is-current"><a class="bulma-page-link">{{transaction.page_index}}</a></li>
+            <li v-if="(transaction.page_total - transaction.page_index) > 0">
+              <a class="bulma-page-link" @click="changePage(transaction.page_index + 1)">{{transaction.page_index + 1}}</a>
+            </li>
+
+            <li v-if="(transaction.page_total - transaction.page_index) > 2"><a class="bulma-page-ellipsis">&hellip;</a></li>
+            <li v-if="(transaction.page_total - transaction.page_index) > 1">
+              <a class="bulma-page-link" @click="changePage(transaction.page_total)">{{transaction.page_total}}</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script>
+  var app = new Vue({
+    el: '#transaction-app',
+    data: {
+      addStock: false,
+      showSoldStocks: false,
+      model: {},
+      sell: {},
+      editId: null,
+      sellId: null,
+      deleteId: null,
+      transaction: {
+        page_index: 1,
+        page_size: 10,
+        page_total: 0
+      },
+      accounts: []
+    },
+    created() {
+      console.log('Component has been created!');
+    },
+    methods: {
+      save: function() {
+        this.model.buy_price = parseFloat(this.model.buy_price);
+        this.model.buy_charges = parseFloat(this.model.buy_charges);
+        this.model.current_quantity = parseInt(this.model.current_quantity);
+        if (this.editId) {
+          axios.post('stocks/'+this.editId, this.model )
+          .then((response) => { this.clear(); });
+        } else {
+          axios.post('stocks', this.model )
+          .then((response) => { this.clear(); });
+        }
+      },
+      pagePrevious: function()  {
+        if (this.transaction.page_index > 1 ) {
+          this.transaction.page_index --;
+          this.getAccounts();
+        }
+      },
+      pageNext: function() {
+        if (this.transaction.page_index != this.transaction.page_total && this.transaction.page_total != 1) {
+          this.transaction.page_index ++;
+          this.getAccounts();
+        }
+      },
+      changePage: function(n) {
+        this.transaction.page_index = n;
+        this.getAccounts();
+      },
+      getAccounts: function() {
+        this.transaction.status = this.showSoldStocks ? 'close' : 'open';
+        axios.get('stocks', { params: this.transaction })
+        .then((response) => {
+          listCount = response.data.total;
+
+          pageWeight = this.transaction.page_size;
+          b = listCount % pageWeight;
+          if (b > 0) {
+            listCount = listCount + (pageWeight - b);
+          }
+          this.transaction.page_total = listCount / pageWeight;
+          if (this.showSoldStocks) {
+            this.accounts = [];
+            response.data.list.forEach(row => {
+              row.invest = row.current_quantity * row.buy_price;
+              row.value = row.current_quantity * row.sell_price;
+              row.charges = row.buy_charges + row.sell_charges;
+              row.pl_percentage = ((row.value - row.charges)/row.invest-1)*100;
+              row.pl = row.value - row.invest;
+              row.is_profit = row.value > row.invest;
+              row.days = Math.round((new Date(row.sell_date).getTime() - new Date(row.buy_date).getTime()) / (1000 * 3600 * 24));
+              this.accounts.push(row);
+            });
+          } else {
+            this.accounts = response.data.list;
+          }
+        });
+      },
+      editRecord: function(item) {
+        this.model = { ...item };
+        this.editId = item.id;
+      },
+      deleteRecord: function(item) {
+        this.model = { ...item };
+        this.deleteId = item.id;
+      },
+      confirmDelete: function() {
+        axios.delete('stocks/'+this.deleteId, this.model )
+        .then((response) => { this.clear(); });
+      },
+      sellRecord: function(item) {
+        this.sell = { ...item };
+        this.sell.old_quantity = this.sell.current_quantity;
+        this.sell.sell_date = new Date().toISOString().slice(0,10);
+        this.sell.sell_charges = 0;
+        this.sell.sell_price = item.buy_price;
+        this.sellId = item.id;
+      },
+      sellingRecord: function() {
+        this.sell.buy_price = parseFloat(this.sell.buy_price);
+        this.sell.buy_charges = parseFloat(this.sell.buy_charges);
+        this.sell.sell_price = parseFloat(this.sell.sell_price);
+        this.sell.sell_charges = parseFloat(this.sell.sell_charges);
+        this.sell.current_quantity = parseInt(this.sell.current_quantity);
+        this.sell.quantity = parseInt(this.sell.quantity);
+        this.sell.status = "close";
+        if (!isNaN(this.sell.parent_id)) {
+          this.sell.parent_id = parseInt(this.sell.parent_id);
+        }
+        if (!isNaN(this.sell.target)) {
+          this.sell.target = parseInt(this.sell.target);
+        }
+        axios.post('stocks/'+this.sellId, this.sell )
+        .then((response) => { this.clean(); });
+      },
+      clear: function() {
+        this.model = {
+          buy_date: new Date().toISOString().slice(0,10),
+          buy_charges: 0,
+          target: 0
+        };
+        this.editId = null;
+        this.deleteId = null;
+        this.getAccounts();
+      },
+      clean: function() {
+        this.sell = {
+        };
+        this.sellId = null;
+        this.getAccounts();
+      },
+    },
+    mounted() {
+      console.log('Component has been Mounted!');
+      this.getAccounts();
+      this.clear();
+    }
+  });
+</script>
+</html>

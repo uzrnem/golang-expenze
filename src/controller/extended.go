@@ -43,12 +43,13 @@ func (t *ExtController) GetTagsByTranscationHits(c echo.Context) error {
 	fromAccountID := c.QueryParam("from_account_id")
 	toAccountID := c.QueryParam("to_account_id")
 	tagID := c.QueryParam("tag_id")
-	transactionID := 1
+	transactionType := "Transfer"
 	if !utils.IsValueNonZero(fromAccountID) {
-		transactionID = 3 //income
+		transactionType = "Income"
 	} else if !utils.IsValueNonZero(toAccountID) {
-		transactionID = 2 //debit
+		transactionType = "Expense"
 	}
+
 	mapp := map[string]any{
 		"tags":       nil,
 		"sub_tags":   nil,
@@ -76,7 +77,7 @@ func (t *ExtController) GetTagsByTranscationHits(c echo.Context) error {
 	conditions = append(conditions, toQuery)
 
 	//Transaction Id Condition
-	transactionQuery := " transaction_type_id = " + fmt.Sprintf("%d", transactionID) + " "
+	transactionQuery := " transaction_type_id in (SELECT id FROM transaction_types where lower(name) = '" + strings.ToLower(transactionType) + "') "
 	conditions = append(conditions, transactionQuery)
 
 	tagList := &[]models.Tag{}

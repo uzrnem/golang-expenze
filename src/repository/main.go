@@ -65,12 +65,26 @@ func (r *RepoStrct) List(c echo.Context, modal any) (any, error) {
 	return modal, nil
 }
 
+func (r *RepoStrct) ListWithCondition(c echo.Context, modal any, where map[string]any, orderBy string) (any, error) {
+	if orderBy == "" {
+		orderBy = "id desc"
+	}
+	err := r.MysqlDB.Order(orderBy).Where(where).Find(modal).Error
+	if err != nil {
+		return nil, err
+	}
+	return modal, nil
+}
+
 func (r *RepoStrct) FetchWithQuery(c echo.Context, modal any, where, order string) error {
 	return r.MysqlDB.Debug().Model(modal).Where(where).Order(order).Find(modal).Error
 }
 
 func (r *RepoStrct) FetchWithFullQuery(c echo.Context, list any, table, silect, joins, where, groupBy, orderBy string, limit, offset int) error {
-	db := r.MysqlDB.Debug().Table(table)
+	db := r.MysqlDB.Debug() //.Table(table)
+	if strings.TrimSpace(table) != "" {
+		db = db.Table(table)
+	}
 	if strings.TrimSpace(silect) != "" {
 		db = db.Select(silect)
 	}

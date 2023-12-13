@@ -13,23 +13,23 @@ import (
 )
 
 var (
-	StatementCtrl Controller
+	StockCtrl Controller
 )
 
-type StatementController struct {
+type StockController struct {
 	repo      repository.Repository
 	validator v.CustomValidator
 }
 
-func StatementLoad() error {
-	StatementCtrl = &StatementController{repo: repository.Repo, validator: *v.Validator}
+func StockLoad() error {
+	StockCtrl = &StockController{repo: repository.Repo, validator: *v.Validator}
 	return nil
 }
 
-func (t *StatementController) Create(c echo.Context) error {
-	modal := &models.Statement{}
+func (t *StockController) Create(c echo.Context) error {
+	modal := &models.Stock{}
 	if err := c.Bind(modal); err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	err := t.repo.Create(c, modal)
 	if err != nil {
@@ -40,36 +40,36 @@ func (t *StatementController) Create(c echo.Context) error {
 	return json.NewEncoder(c.Response()).Encode(modal)
 }
 
-func (t *StatementController) Delete(c echo.Context) error {
+func (t *StockController) Delete(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	err = t.repo.Delete(c, models.Statement{}, id)
+	err = t.repo.Delete(c, models.Stock{}, id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return c.JSON(http.StatusOK, "Deleted")
 }
 
-func (t *StatementController) Get(c echo.Context) error {
+func (t *StockController) Get(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	res, err := t.repo.Get(c, models.Statement{ID: uint(id)})
+	res, err := t.repo.Get(c, models.Stock{ID: uint(id)})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return c.JSON(http.StatusOK, res)
 }
 
-func (t *StatementController) Update(c echo.Context) error {
+func (t *StockController) Update(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	modl := &models.Statement{}
+	modl := &models.Stock{}
 	if err := c.Bind(modl); err != nil {
 		return err
 	}
@@ -81,22 +81,23 @@ func (t *StatementController) Update(c echo.Context) error {
 	return c.JSON(http.StatusOK, modl)
 }
 
-func (t *StatementController) List(c echo.Context) error {
+func (t *StockController) List(c echo.Context) error {
 	pageIndex := c.QueryParam("page_index")
 	pageSize := c.QueryParam("page_size")
+	status := c.QueryParam("status")
+
 	limit := utils.StringToInt(pageSize)
 	offset := (utils.StringToInt(pageIndex) - 1) * limit
-	list := &[]models.FullStatement{}
-	table := "statements s"
-	silect := `s.id, s.account_id, acc.name, s.amount, DATE_FORMAT(s.event_date, "%Y-%m-%d") as event_date, s.remarks`
-	orderBy := "s.event_date desc"
-	join := "LEFT JOIN accounts acc on s.account_id = acc.id"
-	err := t.repo.FetchWithFullQuery(c, list, table, silect, join, "", "", orderBy, limit, offset)
+	where := "status = '" + status + "'"
+	orderBy := "sell_date desc, buy_date desc"
+
+	list := &[]models.Stock{}
+	err := t.repo.FetchWithFullQuery(c, list, "", "", "", where, "", orderBy, limit, offset)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	var count float64
-	t.repo.FetchRow("SELECT COUNT(id) as count FROM statements", &count)
+	t.repo.FetchRow("SELECT COUNT(id) as count FROM stocks WHERE " + where, &count)
 
 	return c.JSON(http.StatusOK, map[string]any{
 		"list":  list,
