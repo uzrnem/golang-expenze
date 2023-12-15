@@ -2,14 +2,14 @@ package controller
 
 import (
 	"encoding/json"
-	v "expensez/pkg/validator"
 	"expensez/src/models"
-	"expensez/src/repository"
 	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo"
+	repository "github.com/uzrnem/go/rdb"
+	v "github.com/uzrnem/go/validator"
 )
 
 var (
@@ -31,7 +31,7 @@ func (t *PassbookController) Create(c echo.Context) error {
 	if err := c.Bind(modal); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	err := t.repo.Create(c, modal)
+	err := t.repo.Create(c.Request().Context(), modal)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -45,7 +45,7 @@ func (t *PassbookController) Delete(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	err = t.repo.Delete(c, models.Passbook{}, id)
+	err = t.repo.Delete(c.Request().Context(), models.Passbook{}, id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -70,7 +70,7 @@ func (t *PassbookController) Get(c echo.Context) error {
 		left join accounts ot on (tt.name = 'Credit' and t.from_account_id = ot.id) or (tt.name = 'Debit' and t.to_account_id = ot.id)`
 	orderBy := "t.event_date DESC, p.id DESC"
 	where := fmt.Sprintf("p.account_id = %s", c.Param("id"))
-	err := t.repo.FetchWithFullQuery(c, list, table, silect, joins, where, "", orderBy, 15, 0)
+	err := t.repo.Builder().Table(table).Select(silect).Join(joins).Where(where).Order(orderBy).Limit(15).Exec(list)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -87,7 +87,7 @@ func (t *PassbookController) Update(c echo.Context) error {
 		return err
 	}
 	modl.ID = uint(id)
-	err = t.repo.Update(c, modl)
+	err = t.repo.Update(c.Request().Context(), modl)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -96,7 +96,7 @@ func (t *PassbookController) Update(c echo.Context) error {
 
 func (t *PassbookController) List(c echo.Context) error {
 	list := &[]models.Passbook{}
-	res, err := t.repo.List(c, list)
+	res, err := t.repo.List(c.Request().Context(), list)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}

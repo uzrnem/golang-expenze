@@ -2,14 +2,14 @@ package controller
 
 import (
 	"encoding/json"
-	"expensez/pkg/utils"
-	v "expensez/pkg/validator"
 	"expensez/src/models"
-	"expensez/src/repository"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo"
+	repository "github.com/uzrnem/go/rdb"
+	"github.com/uzrnem/go/utils"
+	v "github.com/uzrnem/go/validator"
 )
 
 var (
@@ -31,7 +31,7 @@ func (t *StatementController) Create(c echo.Context) error {
 	if err := c.Bind(modal); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	err := t.repo.Create(c, modal)
+	err := t.repo.Create(c.Request().Context(), modal)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -45,7 +45,7 @@ func (t *StatementController) Delete(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	err = t.repo.Delete(c, models.Statement{}, id)
+	err = t.repo.Delete(c.Request().Context(), models.Statement{}, id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -57,7 +57,7 @@ func (t *StatementController) Get(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	res, err := t.repo.Get(c, models.Statement{ID: uint(id)})
+	res, err := t.repo.Get(c.Request().Context(), models.Statement{ID: uint(id)})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -74,7 +74,7 @@ func (t *StatementController) Update(c echo.Context) error {
 		return err
 	}
 	modl.ID = uint(id)
-	err = t.repo.Update(c, modl)
+	err = t.repo.Update(c.Request().Context(), modl)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -91,16 +91,18 @@ func (t *StatementController) List(c echo.Context) error {
 	silect := `s.id, s.account_id, acc.name, s.amount, DATE_FORMAT(s.event_date, "%Y-%m-%d") as event_date, s.remarks`
 	orderBy := "s.event_date desc"
 	join := "LEFT JOIN accounts acc on s.account_id = acc.id"
-	err := t.repo.FetchWithFullQuery(c, list, table, silect, join, "", "", orderBy, limit, offset)
+	err := t.repo.Builder().Table(table).Select(silect).Join(join).Order(orderBy).Limit(limit).Offset(offset).Exec(list)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	var count float64
-	t.repo.FetchRow("SELECT COUNT(id) as count FROM statements", &count)
+	err = t.repo.Builder().Table(table).Select("COUNT(s.id) as count").Exec(&count)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
 
 	return c.JSON(http.StatusOK, map[string]any{
 		"list":  list,
 		"total": count,
 	})
-	return c.JSON(http.StatusOK, list)
 }

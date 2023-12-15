@@ -2,13 +2,13 @@ package controller
 
 import (
 	"encoding/json"
-	v "expensez/pkg/validator"
 	"expensez/src/models"
-	"expensez/src/repository"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo"
+	repository "github.com/uzrnem/go/rdb"
+	v "github.com/uzrnem/go/validator"
 )
 
 var (
@@ -30,7 +30,7 @@ func (t *SubscriptionController) Create(c echo.Context) error {
 	if err := c.Bind(modal); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	err := t.repo.Create(c, modal)
+	err := t.repo.Create(c.Request().Context(), modal)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -44,7 +44,7 @@ func (t *SubscriptionController) Delete(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	err = t.repo.Delete(c, models.Subscription{}, id)
+	err = t.repo.Delete(c.Request().Context(), models.Subscription{}, id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -56,7 +56,7 @@ func (t *SubscriptionController) Get(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	res, err := t.repo.Get(c, models.Subscription{ID: uint(id)})
+	res, err := t.repo.Get(c.Request().Context(), models.Subscription{ID: uint(id)})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -73,7 +73,7 @@ func (t *SubscriptionController) Update(c echo.Context) error {
 		return err
 	}
 	modl.ID = uint(id)
-	err = t.repo.Update(c, modl)
+	err = t.repo.Update(c.Request().Context(), modl)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -82,7 +82,7 @@ func (t *SubscriptionController) Update(c echo.Context) error {
 
 func (t *SubscriptionController) List(c echo.Context) error {
 	list := &[]models.Subscription{}
-	res, err := t.repo.List(c, list)
+	res, err := t.repo.List(c.Request().Context(), list)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}

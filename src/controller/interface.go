@@ -1,9 +1,8 @@
 package controller
 
 import (
-	pkgErr "expensez/pkg/errors"
-
 	"github.com/labstack/echo"
+	pkgErr "github.com/uzrnem/go/errors"
 )
 
 var (

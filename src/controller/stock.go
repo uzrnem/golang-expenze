@@ -2,14 +2,14 @@ package controller
 
 import (
 	"encoding/json"
-	"expensez/pkg/utils"
-	v "expensez/pkg/validator"
 	"expensez/src/models"
-	"expensez/src/repository"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo"
+	repository "github.com/uzrnem/go/rdb"
+	"github.com/uzrnem/go/utils"
+	v "github.com/uzrnem/go/validator"
 )
 
 var (
@@ -31,7 +31,7 @@ func (t *StockController) Create(c echo.Context) error {
 	if err := c.Bind(modal); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	err := t.repo.Create(c, modal)
+	err := t.repo.Create(c.Request().Context(), modal)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -45,7 +45,7 @@ func (t *StockController) Delete(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	err = t.repo.Delete(c, models.Stock{}, id)
+	err = t.repo.Delete(c.Request().Context(), models.Stock{}, id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -57,7 +57,7 @@ func (t *StockController) Get(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	res, err := t.repo.Get(c, models.Stock{ID: uint(id)})
+	res, err := t.repo.Get(c.Request().Context(), models.Stock{ID: uint(id)})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -74,7 +74,7 @@ func (t *StockController) Update(c echo.Context) error {
 		return err
 	}
 	modl.ID = uint(id)
-	err = t.repo.Update(c, modl)
+	err = t.repo.Update(c.Request().Context(), modl)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -92,16 +92,18 @@ func (t *StockController) List(c echo.Context) error {
 	orderBy := "sell_date desc, buy_date desc"
 
 	list := &[]models.Stock{}
-	err := t.repo.FetchWithFullQuery(c, list, "", "", "", where, "", orderBy, limit, offset)
+	err := t.repo.Builder().Where(where).Order(orderBy).Limit(limit).Offset(offset).Exec(list)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	var count float64
-	t.repo.FetchRow("SELECT COUNT(id) as count FROM stocks WHERE " + where, &count)
+	err = t.repo.Builder().Table("stocks").Select("COUNT(id) as count").Where(where).Exec(&count)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
 
 	return c.JSON(http.StatusOK, map[string]any{
 		"list":  list,
 		"total": count,
 	})
-	return c.JSON(http.StatusOK, list)
 }

@@ -3,12 +3,14 @@ module expensez
 go 1.20
 
 require (
-	github.com/go-playground/validator/v10 v10.15.0
 	github.com/labstack/echo v3.3.10+incompatible
-	github.com/labstack/echo/v4 v4.11.1
+	github.com/uzrnem/go/errors v0.0.0-20231215032526-c57d217fa195
+	github.com/uzrnem/go/rdb v0.0.0-20231215032526-c57d217fa195
+	github.com/uzrnem/go/utils v0.0.0-20231215032526-c57d217fa195
+	github.com/uzrnem/go/validator v0.0.0-20231215032526-c57d217fa195
 	golang.org/x/sync v0.3.0
 	gorm.io/driver/mysql v1.5.1
-	gorm.io/gorm v1.25.2
+	gorm.io/gorm v1.25.5
 )
 
 require (
@@ -16,6 +18,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.16.0 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect

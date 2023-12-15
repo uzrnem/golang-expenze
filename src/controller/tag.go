@@ -2,14 +2,14 @@ package controller
 
 import (
 	"encoding/json"
-	"expensez/pkg/utils"
-	v "expensez/pkg/validator"
 	"expensez/src/models"
-	"expensez/src/repository"
 	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo"
+	repository "github.com/uzrnem/go/rdb"
+	"github.com/uzrnem/go/utils"
+	v "github.com/uzrnem/go/validator"
 )
 
 var (
@@ -31,7 +31,7 @@ func (t *TagController) Create(c echo.Context) error {
 	if err := c.Bind(modal); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	err := t.repo.Create(c, modal)
+	err := t.repo.Create(c.Request().Context(), modal)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -45,7 +45,7 @@ func (t *TagController) Delete(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	err = t.repo.Delete(c, models.Tag{}, id)
+	err = t.repo.Delete(c.Request().Context(), models.Tag{}, id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -57,7 +57,7 @@ func (t *TagController) Get(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	res, err := t.repo.Get(c, models.Tag{ID: uint(id)})
+	res, err := t.repo.Get(c.Request().Context(), models.Tag{ID: uint(id)})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -74,7 +74,7 @@ func (t *TagController) Update(c echo.Context) error {
 		return err
 	}
 	modl.ID = uint(id)
-	err = t.repo.Update(c, modl)
+	err = t.repo.Update(c.Request().Context(), modl)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -97,7 +97,8 @@ func (t *TagController) List(c echo.Context) error {
 	LEFT JOIN activities m ON t.id in (m.tag_id, m.sub_tag_id) AND m.event_date > DATE_SUB(now(), INTERVAL 6 MONTH)`
 	groupBy := "t.id, t.name, t.tag_id, p.name, t.transaction_type_id, tt.name"
 	orderBy := "COUNT(DISTINCT(c.id)) DESC, t.name ASC"
-	err := t.repo.FetchWithFullQuery(c, list, table, silect, joins, where, groupBy, orderBy, 0, 0)
+
+	err := t.repo.Builder().Select(silect).Table(table).Join(joins).Where(where).Group(groupBy).Order(orderBy).Exec(list)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
