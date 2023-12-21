@@ -9,7 +9,6 @@ import (
 	"github.com/labstack/echo"
 	repository "github.com/uzrnem/go/rdb"
 	"github.com/uzrnem/go/utils"
-	v "github.com/uzrnem/go/validator"
 )
 
 var (
@@ -17,12 +16,11 @@ var (
 )
 
 type ExtController struct {
-	repo      repository.Repository
-	validator v.CustomValidator
+	BaseController
 }
 
 func ExtendedLoad() error {
-	ExtendedCtrl = &ExtController{repo: repository.Repo, validator: *v.Validator}
+	ExtendedCtrl = &ExtController{}
 	return nil
 }
 
@@ -31,7 +29,7 @@ func (t *ExtController) FindAccountByType(c echo.Context) error {
 	list := &[]models.Account{}
 	where := "account_type_id in (SELECT id FROM account_types where lower(name) = '" + strings.ToLower(account_type) + "')"
 	order := "name ASC"
-	err := t.repo.Builder().Where(where).Order(order).Exec(list)
+	err := repository.Repo.Builder().Where(where).Order(order).Exec(list)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -81,7 +79,7 @@ func (t *ExtController) GetTagsByTranscationHits(c echo.Context) error {
 
 	tagList := &[]models.Tag{}
 	where := transactionQuery + " AND tag_id IS NULL "
-	err := t.repo.Builder().Where(where).Exec(tagList)
+	err := repository.Repo.Builder().Where(where).Exec(tagList)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -92,7 +90,7 @@ func (t *ExtController) GetTagsByTranscationHits(c echo.Context) error {
 		actRes := &models.Activity{}
 		table := "activities"
 		silect := "tag_id"
-		err := t.repo.Builder().Table(table).Select(silect).Where(tagConditions).Group("tag_id, sub_tag_id").Order("count(id) desc").Limit(1).Exec(actRes)
+		err := repository.Repo.Builder().Table(table).Select(silect).Where(tagConditions).Group("tag_id, sub_tag_id").Order("count(id) desc").Limit(1).Exec(actRes)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
@@ -105,7 +103,7 @@ func (t *ExtController) GetTagsByTranscationHits(c echo.Context) error {
 		actRes := &models.Activity{}
 		table := "activities"
 		silect := "sub_tag_id, GROUP_CONCAT(DISTINCT(remarks)) as remarks"
-		err := t.repo.Builder().Table(table).Select(silect).Where(subTagConditions).Group("sub_tag_id").Order("count(id) desc").Limit(1).Exec(actRes)
+		err := repository.Repo.Builder().Table(table).Select(silect).Where(subTagConditions).Group("sub_tag_id").Order("count(id) desc").Limit(1).Exec(actRes)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
@@ -113,7 +111,7 @@ func (t *ExtController) GetTagsByTranscationHits(c echo.Context) error {
 		mapp["remarks"] = actRes.Remarks
 
 		tagList := &[]models.Tag{}
-		err = t.repo.Builder().Where("tag_id = " + tagID).Exec(tagList)
+		err = repository.Repo.Builder().Where("tag_id = " + tagID).Exec(tagList)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
@@ -130,7 +128,7 @@ func (t *ExtController) BalanceSheet(c echo.Context) error {
 	where := "a.amount !=0 and a.is_snapshot_disable = 0 and a.is_closed != 1 "
 	groupBy := `a.account_type_id order by t.name='Saving' desc, t.name='Credit' desc, t.name='Wallet' desc,
 	t.name='Stocks Equity' desc, t.name='Loan' desc, t.name='Mutual Funds' desc, t.name='Deposit' desc`
-	err := t.repo.Builder().Table(table).Select(silect).Join(joins).Where(where).Group(groupBy).Exec(actTypeRes)
+	err := repository.Repo.Builder().Table(table).Select(silect).Join(joins).Where(where).Group(groupBy).Exec(actTypeRes)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -139,7 +137,7 @@ func (t *ExtController) BalanceSheet(c echo.Context) error {
 	silect = "a.name as name, t.name as type, a.amount as amount"
 	orderBy := `t.name='Saving' desc, t.name='Credit' desc, t.name='Wallet' desc,
 	t.name='Deposit' desc, t.name='Loan' desc, t.name='Stocks Equity', a.name`
-	err = t.repo.Builder().Table(table).Select(silect).Join(joins).Where(where).Order(orderBy).Exec(actRes)
+	err = repository.Repo.Builder().Table(table).Select(silect).Join(joins).Where(where).Order(orderBy).Exec(actRes)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -217,7 +215,7 @@ func (t *ExtController) Statement(c echo.Context) error {
 	 ) ccexp on ccexp.yearmonth = yrmn.yearmonth `, and_date_condition, and_date_condition, where_date_condition, and_date_condition, and_date_condition)
 	groupBy := "yrmn.yearmonth, yrmn.year, yrmn.mon"
 	orderBy := "yrmn.yearmonth DESC"
-	err := t.repo.Builder().Table(table).Select(silect).Join(joins).Group(groupBy).Order(orderBy).Exec(list)
+	err := repository.Repo.Builder().Table(table).Select(silect).Join(joins).Group(groupBy).Order(orderBy).Exec(list)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -245,7 +243,7 @@ func (t *ExtController) ExpenseSheet(c echo.Context) error {
 	where := fmt.Sprintf("act.transaction_type_id = 2 %s ", monthCond)
 	groupBy := "tag.name, sub.name"
 	orderBy := "SUM(act.amount) ASC"
-	err := t.repo.Builder().Table(table).Select(silect).Join(joins).Where(where).Group(groupBy).Order(orderBy).Exec(holdings)
+	err := repository.Repo.Builder().Table(table).Select(silect).Join(joins).Where(where).Group(groupBy).Order(orderBy).Exec(holdings)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -256,7 +254,7 @@ func (t *ExtController) ExpenseSheet(c echo.Context) error {
 	where = "transaction_type_id = 2"
 	groupBy = "EXTRACT(YEAR_MONTH FROM event_date), MONTHNAME(event_date), year(event_date)"
 	orderBy = "EXTRACT(YEAR_MONTH FROM event_date) DESC"
-	err = t.repo.Builder().Table(table).Select(silect).Where(where).Group(groupBy).Order(orderBy).Exec(monYear)
+	err = repository.Repo.Builder().Table(table).Select(silect).Where(where).Group(groupBy).Order(orderBy).Exec(monYear)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -268,7 +266,7 @@ func (t *ExtController) ExpenseSheet(c echo.Context) error {
 	where = fmt.Sprintf("act.transaction_type_id = 2 %s ", monthCond)
 	groupBy = "a.id, a.name, act.from_account_id"
 	orderBy = "SUM(act.amount) DESC"
-	err = t.repo.Builder().Table(table).Select(silect).Join(joins).Where(where).Order(orderBy).Group(groupBy).Exec(expenseByAccount)
+	err = repository.Repo.Builder().Table(table).Select(silect).Join(joins).Where(where).Order(orderBy).Group(groupBy).Exec(expenseByAccount)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -283,7 +281,7 @@ func (t *ExtController) ExpenseSheet(c echo.Context) error {
 	duration := c.Param("duration")
 	date_condition := fmt.Sprintf(" event_date ", duration)
 	list := &[]models.Account{}
-	err := t.repo.FetchWithFullQuery(c, list, table, silect, joins, where, groupBy, orderBy, limit, offset)
+	err := repository.Repo.FetchWithFullQuery(c, list, table, silect, joins, where, groupBy, orderBy, limit, offset)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}

@@ -47,6 +47,8 @@ github.com/uzrnem/go/errors v0.0.0-20231215032526-c57d217fa195 h1:lSWLaojGa3wN5L
 github.com/uzrnem/go/errors v0.0.0-20231215032526-c57d217fa195/go.mod h1:KZyzgO7BFYHzVW5UXoYEaS/ipr5cy4V0ALyPFkR03O8=
 github.com/uzrnem/go/rdb v0.0.0-20231215032526-c57d217fa195 h1:cUBuQ7nDx5LSucC2O1fFcFjW5sYA0K7xOP7IOV2u6Hc=
 github.com/uzrnem/go/rdb v0.0.0-20231215032526-c57d217fa195/go.mod h1:xOJglSTnCx7qnjhalkhXfUBYNSNuzpd5IdL2IMXJLbg=
+github.com/uzrnem/go/rdb v0.0.0-20231220154027-a6b0b4f15290 h1:2Rkjvr1YJgLKRCJ8w2T7GbznRAcFPz0UckAVmuPLVQ4=
+github.com/uzrnem/go/rdb v0.0.0-20231220154027-a6b0b4f15290/go.mod h1:xOJglSTnCx7qnjhalkhXfUBYNSNuzpd5IdL2IMXJLbg=
 github.com/uzrnem/go/utils v0.0.0-20231215032526-c57d217fa195 h1:04fknggePcx/v9h9oohKEYWd+cN/j6agwqM7NRmZgc0=
 github.com/uzrnem/go/utils v0.0.0-20231215032526-c57d217fa195/go.mod h1:tEejRDprDP29DGRYxe1MK+TezYxWI923i1mEb2Ti3fc=
 github.com/uzrnem/go/validator v0.0.0-20231215032526-c57d217fa195 h1:IGa29YJFD5Dq/ZymKVN6SOgZIUeAUnQ/ZQLmoYokNJc=

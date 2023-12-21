@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"expensez/src/models"
 	"net/http"
 	"strconv"
@@ -9,7 +8,6 @@ import (
 	"github.com/labstack/echo"
 	repository "github.com/uzrnem/go/rdb"
 	"github.com/uzrnem/go/utils"
-	v "github.com/uzrnem/go/validator"
 )
 
 var (
@@ -17,68 +15,29 @@ var (
 )
 
 type TagController struct {
-	repo      repository.Repository
-	validator v.CustomValidator
+	BaseController
 }
 
 func TagLoad() error {
-	TagCtrl = &TagController{repo: repository.Repo, validator: *v.Validator}
+	TagCtrl = &TagController{
+		BaseController: BaseController{
+			GetModel: func(id string) (any, error) {
+				modal := &models.Tag{}
+				if id != "" {
+					ID, err := strconv.Atoi(id)
+					if err != nil {
+						return nil, err
+					}
+					modal.ID = uint(ID)
+				}
+				return modal, nil
+			},
+			GetList: func() any {
+				return &[]models.Tag{}
+			},
+		},
+	}
 	return nil
-}
-
-func (t *TagController) Create(c echo.Context) error {
-	modal := &models.Tag{}
-	if err := c.Bind(modal); err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
-	}
-	err := t.repo.Create(c.Request().Context(), modal)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
-	c.Response().WriteHeader(http.StatusCreated)
-	return json.NewEncoder(c.Response()).Encode(modal)
-}
-
-func (t *TagController) Delete(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	err = t.repo.Delete(c.Request().Context(), models.Tag{}, id)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	return c.JSON(http.StatusOK, "Deleted")
-}
-
-func (t *TagController) Get(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	res, err := t.repo.Get(c.Request().Context(), models.Tag{ID: uint(id)})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	return c.JSON(http.StatusOK, res)
-}
-
-func (t *TagController) Update(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	modl := &models.Tag{}
-	if err := c.Bind(modl); err != nil {
-		return err
-	}
-	modl.ID = uint(id)
-	err = t.repo.Update(c.Request().Context(), modl)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	return c.JSON(http.StatusOK, modl)
 }
 
 func (t *TagController) List(c echo.Context) error {
@@ -98,7 +57,7 @@ func (t *TagController) List(c echo.Context) error {
 	groupBy := "t.id, t.name, t.tag_id, p.name, t.transaction_type_id, tt.name"
 	orderBy := "COUNT(DISTINCT(c.id)) DESC, t.name ASC"
 
-	err := t.repo.Builder().Select(silect).Table(table).Join(joins).Where(where).Group(groupBy).Order(orderBy).Exec(list)
+	err := repository.Repo.Builder().Select(silect).Table(table).Join(joins).Where(where).Group(groupBy).Order(orderBy).Exec(list)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}

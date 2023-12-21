@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"expensez/src/models"
 	"fmt"
 	"net/http"
@@ -11,7 +10,6 @@ import (
 	"github.com/labstack/echo"
 	repository "github.com/uzrnem/go/rdb"
 	"github.com/uzrnem/go/utils"
-	v "github.com/uzrnem/go/validator"
 )
 
 var (
@@ -19,68 +17,29 @@ var (
 )
 
 type ActivityController struct {
-	repo      repository.Repository
-	validator v.CustomValidator
+	BaseController
 }
 
 func ActivityLoad() error {
-	ActivityCtrl = &ActivityController{repo: repository.Repo, validator: *v.Validator}
+	ActivityCtrl = &ActivityController{
+		BaseController: BaseController{
+			GetModel: func(id string) (any, error) {
+				modal := &models.Activity{}
+				if id != "" {
+					ID, err := strconv.Atoi(id)
+					if err != nil {
+						return nil, err
+					}
+					modal.ID = uint(ID)
+				}
+				return modal, nil
+			},
+			GetList: func() any {
+				return &[]models.Activity{}
+			},
+		},
+	}
 	return nil
-}
-
-func (t *ActivityController) Create(c echo.Context) error {
-	modal := &models.Activity{}
-	if err := c.Bind(modal); err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
-	}
-	err := t.repo.Create(c.Request().Context(), modal)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
-	c.Response().WriteHeader(http.StatusCreated)
-	return json.NewEncoder(c.Response()).Encode(modal)
-}
-
-func (t *ActivityController) Delete(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	err = t.repo.Delete(c.Request().Context(), models.Activity{}, id)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	return c.JSON(http.StatusOK, "Deleted")
-}
-
-func (t *ActivityController) Get(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	res, err := t.repo.Get(c.Request().Context(), models.Activity{ID: uint(id)})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	return c.JSON(http.StatusOK, res)
-}
-
-func (t *ActivityController) Update(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	modl := &models.Activity{}
-	if err := c.Bind(modl); err != nil {
-		return err
-	}
-	modl.ID = uint(id)
-	err = t.repo.Update(c.Request().Context(), modl)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	return c.JSON(http.StatusOK, modl)
 }
 
 func (t *ActivityController) List(c echo.Context) error {
@@ -141,17 +100,17 @@ func (t *ActivityController) List(c echo.Context) error {
 	LEFT JOIN accounts as fa ON fa.id = act.from_account_id 
 	LEFT JOIN accounts as ta ON ta.id = act.to_account_id `
 	orderBy := "`act`.`event_date` DESC, `act`.`id` DESC"
-	err := t.repo.Builder().Table(table).Select(silect).Join(joins).Where(where).Order(orderBy).Limit(limit).Offset(offset).Exec(list)
+	err := repository.Repo.Builder().Table(table).Select(silect).Join(joins).Where(where).Order(orderBy).Limit(limit).Offset(offset).Exec(list)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	var count, sum float64
-	err = t.repo.Builder().Table(table).Select("COUNT(act.id) as count").Where(utils.TrimSpace(where)).Exec(&count)
+	err = repository.Repo.Builder().Table(table).Select("COUNT(act.id) as count").Where(utils.TrimSpace(where)).Exec(&count)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	if count < 100 {
-		err = t.repo.Builder().Table(table).Select("SUM(act.amount) as sum").Where(utils.TrimSpace(where)).Exec(&sum)
+		err = repository.Repo.Builder().Table(table).Select("SUM(act.amount) as sum").Where(utils.TrimSpace(where)).Exec(&sum)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}

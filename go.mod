@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/uzrnem/go/errors v0.0.0-20231215032526-c57d217fa195
-	github.com/uzrnem/go/rdb v0.0.0-20231215032526-c57d217fa195
+	github.com/uzrnem/go/rdb v0.0.0-20231220154027-a6b0b4f15290
 	github.com/uzrnem/go/utils v0.0.0-20231215032526-c57d217fa195
 	github.com/uzrnem/go/validator v0.0.0-20231215032526-c57d217fa195
 	golang.org/x/sync v0.3.0
