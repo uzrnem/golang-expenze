@@ -1,0 +1,5 @@
+/node_modules
+/garage
+/package-lock.json
+env.js
+/schema/db

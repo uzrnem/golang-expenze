@@ -1,14 +1,14 @@
-#docker-compose -f docker-compose.yml up -d
+#docker-compose -f docker-compose-full.yml up -d
 version: '3.7'
 
 services:
   mysqldb:
-    image: mysql:9.2.0-oraclelinux9
+    image: mysql:8.0.27
     container_name: mysql
-    restart: unless-stopped
+    restart: always #restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: expense
+      MYSQL_DATABASE: test_db
     ports:
       - 3306:3306
     expose:
@@ -16,11 +16,9 @@ services:
     networks:
       - mysql-database
 
-  mysqladmin:
+  phpmyadmin:
     image: phpmyadmin/phpmyadmin:5.1.1
     container_name: mysqladmin
-    depends_on:
-      - mysqldb
     links:
       - mysqldb
     environment:
@@ -36,32 +34,17 @@ services:
   expense:
     depends_on:
       - mysqldb
-    image: uzrnem/expense:0.2.6
-    container_name: expense
+    image: expense:1.0.0
+    container_name: expenses
     environment:
       EXP_CONFIG_DATABASE_NAME: expense
       EXP_CONFIG_USER_NAME: root
       EXP_CONFIG_PASS_NAME: root
       EXP_CONFIG_HOST_NAME: mysqldb
-      EXP_CONFIG_PORT_NUMB: 3306
     ports:
-      - 9001:9001
-    networks:
-      - mysql-database
-
-  phinx:
-    image: uzrnem/phinx:0.4 # uzrnem/phinx:0.4-mac
-    container_name: phinx
-    volumes:
-      - $PWD/schema:/phinx/db
-    depends_on:
-      - mysqldb
-    environment:
-      PHINX_DB_HOST: mysqlhost
-      PHINX_DB_DATABASE: expense
-      PHINX_DB_USERNAME: root
-      PHINX_DB_PASSWORD: root
-    command:  ./vendor/bin/phinx migrate && ./vendor/bin/phinx seed:run -s AccountTypeSeeder -s TransactionTypeSeeder -s TagSeeder
+      - 9000:9000
+    expose:
+      - 9000
     networks:
       - mysql-database
 
